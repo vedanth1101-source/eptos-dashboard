@@ -481,7 +481,7 @@ function buildStreakGrid(){
       var cnt=state.streak.filter(Boolean).length;
       document.getElementById('streak-display').textContent=cnt+'d';
       document.getElementById('cur-day').textContent=Math.max(1,cnt);
-      updateWeeklyBars();
+      updateChartData(); // <-- This now safely updates the chart!
       updateMaster();
     };
     g.appendChild(d);
@@ -489,24 +489,10 @@ function buildStreakGrid(){
 }
 buildStreakGrid();
 
-function updateWeeklyBars(){
-  var weeks=[0,0,0,0];
-  for(var i=0;i<40;i++) if(state.streak[i]) weeks[Math.floor(i/10)]++;
-  var wb=document.getElementById('weekly-bars');
-  wb.innerHTML='';
-  ['Week 1','Week 2','Week 3','Week 4'].forEach(function(lbl,i){
-    var pct=Math.round(weeks[i]/10*100);
-    wb.innerHTML+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:var(--color-text-secondary);width:48px">'+lbl+'</span><div class="ws-bar"><div class="ws-fill" style="width:'+pct+'%"></div></div><span style="font-size:11px;font-weight:500;min-width:28px;text-align:right">'+pct+'%</span></div>';
-  });
-}
-updateWeeklyBars();
-
 // --- WEEKLY READINESS CHART ---
 var readinessChart;
 function initChart() {
   var ctx = document.getElementById('readinessChart').getContext('2d');
-  
-  // Tailwind blue and background fill colors
   var gradient = ctx.createLinearGradient(0, 0, 0, 160);
   gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
   gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
@@ -516,13 +502,13 @@ function initChart() {
       data: {
           labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
           datasets: [{
-              label: 'Target Readiness %',
-              data: [15, 35, 65, 85], // Your target trajectory
-              borderColor: '#3b82f6', // Tailwind blue-500
+              label: 'Weekly Progress %',
+              data: [0, 0, 0, 0], 
+              borderColor: '#3b82f6', 
               backgroundColor: gradient,
               borderWidth: 2,
               fill: true,
-              tension: 0.4, // This makes the line beautifully curved
+              tension: 0.4, 
               pointBackgroundColor: '#fff',
               pointBorderColor: '#3b82f6',
               pointBorderWidth: 2,
@@ -539,11 +525,22 @@ function initChart() {
           }
       }
   });
+  updateChartData(); // Load any saved data immediately
 }
 
-// Draw the chart right away
-initChart();
+// Calculates your streak data and animates the chart
+function updateChartData(){
+  if(!readinessChart) return;
+  var weeks=[0,0,0,0];
+  for(var i=0;i<40;i++) if(state.streak[i]) weeks[Math.floor(i/10)]++;
+  
+  var actualData = weeks.map(function(w){ return Math.round((w/10)*100); });
+  readinessChart.data.datasets[0].data = actualData;
+  readinessChart.update();
+}
 
+// Draw the chart
+initChart();
 function updateMaster(){
   var lc=parseInt(document.getElementById('lc-solved').value)||0;
   var apt=parseInt(document.getElementById('apt-acc').value)||0;
