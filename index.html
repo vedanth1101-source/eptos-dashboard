@@ -491,8 +491,15 @@ buildStreakGrid();
 
 // --- WEEKLY READINESS CHART ---
 var readinessChart;
+
 function initChart() {
+  // 🚨 THE FIX: Destroy the ghost chart before making a new one!
+  if (readinessChart) {
+      readinessChart.destroy();
+  }
+
   var ctx = document.getElementById('readinessChart').getContext('2d');
+  
   var gradient = ctx.createLinearGradient(0, 0, 0, 160);
   gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
   gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
@@ -525,7 +532,8 @@ function initChart() {
           }
       }
   });
-  updateChartData(); // Load any saved data immediately
+  
+  updateChartData(); 
 }
 
 // Calculates your streak data and animates the chart
