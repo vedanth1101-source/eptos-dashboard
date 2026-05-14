@@ -904,5 +904,53 @@ function genHash(){
   sendPrompt('Here is my EPTOS week hash: '+hash+' — analyze my progress and adjust my plan for next week');
 }
 
+// --- AUTO-SAVE DATA TO BROWSER LOCAL STORAGE ---
 
+// 1. Save data right before the page refreshes or closes
+window.addEventListener('beforeunload', function() {
+    // Save all inputs, sliders, and textareas
+    var inputs = document.querySelectorAll('input, select, textarea');
+    var data = {};
+    inputs.forEach(function(el, index) {
+        data[el.id || 'idx_'+index] = el.value; 
+    });
+    localStorage.setItem('eptos_inputs', JSON.stringify(data));
+    
+    // Save the global state (Streaks)
+    localStorage.setItem('eptos_state', JSON.stringify(state));
+    
+    // Save the dynamic tables so rows don't disappear
+    localStorage.setItem('eptos_daily', document.getElementById('daily-body').innerHTML);
+    localStorage.setItem('eptos_coding', document.getElementById('coding-body').innerHTML);
+    localStorage.setItem('eptos_project', document.getElementById('project-body').innerHTML);
+});
+
+// 2. Load data automatically when the page opens
+window.addEventListener('load', function() {
+    var savedInputs = JSON.parse(localStorage.getItem('eptos_inputs'));
+    var savedState = JSON.parse(localStorage.getItem('eptos_state'));
+    
+    // Restore state and streak grid
+    if (savedState) {
+        state = savedState;
+        buildStreakGrid();
+        updateWeeklyBars();
+    }
+    
+    // Restore tables
+    if (localStorage.getItem('eptos_daily')) document.getElementById('daily-body').innerHTML = localStorage.getItem('eptos_daily');
+    if (localStorage.getItem('eptos_coding')) document.getElementById('coding-body').innerHTML = localStorage.getItem('eptos_coding');
+    if (localStorage.getItem('eptos_project')) document.getElementById('project-body').innerHTML = localStorage.getItem('eptos_project');
+
+    // Restore input values
+    if (savedInputs) {
+        var inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(function(el, index) {
+            if(savedInputs[el.id || 'idx_'+index]) {
+                el.value = savedInputs[el.id || 'idx_'+index];
+            }
+        });
+        updateMaster(); // Recalculate main progress bars
+    }
+});
 </script>
