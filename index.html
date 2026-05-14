@@ -1248,4 +1248,64 @@ window.addEventListener(
    ========================= */
 
 setInterval(saveAllData, 10000);
+
+const ctx = document.getElementById('progressChart');
+
+if (ctx) {
+    new Chart(ctx, {
+        type: 'line',
+
+        data: {
+            labels: [
+                'Week 1',
+                'Week 2',
+                'Week 3',
+                'Week 4'
+            ],
+
+            datasets: [
+                {
+                    label: 'Placement Readiness',
+
+                    data: [18, 32, 47, 71],
+
+                    borderColor: '#3b82f6',
+
+                    backgroundColor:
+                        'rgba(59,130,246,0.2)',
+
+                    tension: 0.4,
+
+                    fill: true
+                }
+            ]
+        },
+
+        options: {
+            responsive: true,
+
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    ticks: {
+                        color: 'white'
+                    }
+                },
+
+                y: {
+                    ticks: {
+                        color: 'white'
+                    }
+                }
+            }
+        }
+    });
+}
 </script>
