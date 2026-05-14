@@ -907,50 +907,345 @@ function genHash(){
 // --- AUTO-SAVE DATA TO BROWSER LOCAL STORAGE ---
 
 // 1. Save data right before the page refreshes or closes
-window.addEventListener('beforeunload', function() {
-    // Save all inputs, sliders, and textareas
-    var inputs = document.querySelectorAll('input, select, textarea');
+/* =========================================================
+   EPTOS ELITE SAVE SYSTEM
+   Proper structured localStorage architecture
+   ========================================================= */
+
+
+/* =========================
+   MAIN SAVE FUNCTION
+   ========================= */
+
+function saveAllData() {
+    saveInputs();
+    saveDailyTable();
+    saveCodingTable();
+    saveProjectTable();
+    saveState();
+
+    console.log("EPTOS data saved");
+}
+
+
+/* =========================
+   SAVE BASIC INPUTS
+   ========================= */
+
+function saveInputs() {
     var data = {};
-    inputs.forEach(function(el, index) {
-        data[el.id || 'idx_'+index] = el.value; 
+
+    document.querySelectorAll('input, select, textarea').forEach(function(el, index) {
+
+        var key = el.id || ("input_" + index);
+
+        if (el.type === "checkbox") {
+            data[key] = el.checked;
+        }
+        else {
+            data[key] = el.value;
+        }
     });
-    localStorage.setItem('eptos_inputs', JSON.stringify(data));
-    
-    // Save the global state (Streaks)
-    localStorage.setItem('eptos_state', JSON.stringify(state));
-    
-    // Save the dynamic tables so rows don't disappear
-    localStorage.setItem('eptos_daily', document.getElementById('daily-body').innerHTML);
-    localStorage.setItem('eptos_coding', document.getElementById('coding-body').innerHTML);
-    localStorage.setItem('eptos_project', document.getElementById('project-body').innerHTML);
-});
 
-// 2. Load data automatically when the page opens
-window.addEventListener('load', function() {
-    var savedInputs = JSON.parse(localStorage.getItem('eptos_inputs'));
-    var savedState = JSON.parse(localStorage.getItem('eptos_state'));
-    
-    // Restore state and streak grid
-    if (savedState) {
-        state = savedState;
-        buildStreakGrid();
-        updateWeeklyBars();
-    }
-    
-    // Restore tables
-    if (localStorage.getItem('eptos_daily')) document.getElementById('daily-body').innerHTML = localStorage.getItem('eptos_daily');
-    if (localStorage.getItem('eptos_coding')) document.getElementById('coding-body').innerHTML = localStorage.getItem('eptos_coding');
-    if (localStorage.getItem('eptos_project')) document.getElementById('project-body').innerHTML = localStorage.getItem('eptos_project');
+    localStorage.setItem(
+        "eptos_inputs",
+        JSON.stringify(data)
+    );
+}
 
-    // Restore input values
-    if (savedInputs) {
-        var inputs = document.querySelectorAll('input, select, textarea');
-        inputs.forEach(function(el, index) {
-            if(savedInputs[el.id || 'idx_'+index]) {
-                el.value = savedInputs[el.id || 'idx_'+index];
+
+/* =========================
+   LOAD BASIC INPUTS
+   ========================= */
+
+function loadInputs() {
+
+    var saved = JSON.parse(
+        localStorage.getItem("eptos_inputs")
+    );
+
+    if (!saved) return;
+
+    document.querySelectorAll('input, select, textarea')
+        .forEach(function(el, index) {
+
+            var key = el.id || ("input_" + index);
+
+            if (saved[key] === undefined) return;
+
+            if (el.type === "checkbox") {
+                el.checked = saved[key];
+            }
+            else {
+                el.value = saved[key];
             }
         });
-        updateMaster(); // Recalculate main progress bars
-    }
-});
+}
+
+
+/* =========================
+   SAVE DAILY TABLE
+   ========================= */
+
+function saveDailyTable() {
+
+    var rows = [];
+
+    document.querySelectorAll('#daily-body tr')
+        .forEach(function(row) {
+
+            var inputs = row.querySelectorAll('input, select');
+
+            rows.push({
+                time: inputs[0]?.value || "",
+                task: inputs[1]?.value || "",
+                category: inputs[2]?.value || "",
+                priority: inputs[3]?.value || "",
+                estimated: inputs[4]?.value || "",
+                actual: inputs[5]?.value || "",
+                notes: inputs[6]?.value || ""
+            });
+        });
+
+    localStorage.setItem(
+        "eptos_daily_rows",
+        JSON.stringify(rows)
+    );
+}
+
+
+/* =========================
+   LOAD DAILY TABLE
+   ========================= */
+
+function loadDailyTable() {
+
+    var rows = JSON.parse(
+        localStorage.getItem("eptos_daily_rows")
+    );
+
+    if (!rows) return;
+
+    document.getElementById('daily-body').innerHTML = "";
+
+    rows.forEach(function(row) {
+
+        addDailyRow([
+            row.time,
+            row.task,
+            row.category,
+            row.priority,
+            row.estimated,
+            row.actual,
+            row.notes
+        ]);
+    });
+}
+
+
+/* =========================
+   SAVE CODING TABLE
+   ========================= */
+
+function saveCodingTable() {
+
+    var rows = [];
+
+    document.querySelectorAll('#coding-body tr')
+        .forEach(function(row) {
+
+            var inputs = row.querySelectorAll('input, select');
+
+            rows.push({
+                problem: inputs[0]?.value || "",
+                topic: inputs[1]?.value || "",
+                difficulty: inputs[2]?.value || "",
+                time: inputs[3]?.value || "",
+                accuracy: inputs[4]?.value || "",
+                revision: inputs[5]?.value || "",
+                weak: inputs[6]?.value || ""
+            });
+        });
+
+    localStorage.setItem(
+        "eptos_coding_rows",
+        JSON.stringify(rows)
+    );
+}
+
+
+/* =========================
+   LOAD CODING TABLE
+   ========================= */
+
+function loadCodingTable() {
+
+    var rows = JSON.parse(
+        localStorage.getItem("eptos_coding_rows")
+    );
+
+    if (!rows) return;
+
+    document.getElementById('coding-body').innerHTML = "";
+
+    rows.forEach(function(row) {
+
+        addCodingRow([
+            row.problem,
+            row.topic,
+            row.difficulty,
+            row.time,
+            "false",
+            row.accuracy,
+            row.revision,
+            row.weak
+        ]);
+    });
+
+    updateCodingMetrics();
+}
+
+
+/* =========================
+   SAVE PROJECT TABLE
+   ========================= */
+
+function saveProjectTable() {
+
+    var rows = [];
+
+    document.querySelectorAll('#project-body tr')
+        .forEach(function(row) {
+
+            var inputs = row.querySelectorAll('input, select');
+
+            rows.push({
+                feature: inputs[0]?.value || "",
+                module: inputs[1]?.value || "",
+                status: inputs[2]?.value || "",
+                priority: inputs[3]?.value || "",
+                estimated: inputs[4]?.value || "",
+                actual: inputs[5]?.value || "",
+                notes: inputs[6]?.value || ""
+            });
+        });
+
+    localStorage.setItem(
+        "eptos_project_rows",
+        JSON.stringify(rows)
+    );
+}
+
+
+/* =========================
+   LOAD PROJECT TABLE
+   ========================= */
+
+function loadProjectTable() {
+
+    var rows = JSON.parse(
+        localStorage.getItem("eptos_project_rows")
+    );
+
+    if (!rows) return;
+
+    document.getElementById('project-body').innerHTML = "";
+
+    rows.forEach(function(row) {
+
+        addProjectRow([
+            row.feature,
+            row.module,
+            row.status,
+            row.priority,
+            row.estimated,
+            row.actual,
+            row.notes
+        ]);
+    });
+
+    updateProjectMetrics();
+}
+
+
+/* =========================
+   SAVE GLOBAL STATE
+   ========================= */
+
+function saveState() {
+
+    localStorage.setItem(
+        "eptos_state",
+        JSON.stringify(state)
+    );
+}
+
+
+/* =========================
+   LOAD GLOBAL STATE
+   ========================= */
+
+function loadState() {
+
+    var saved = JSON.parse(
+        localStorage.getItem("eptos_state")
+    );
+
+    if (!saved) return;
+
+    state = saved;
+
+    buildStreakGrid();
+    updateWeeklyBars();
+}
+
+
+/* =========================
+   LOAD EVERYTHING
+   ========================= */
+
+function loadAllData() {
+
+    loadInputs();
+
+    loadState();
+
+    loadDailyTable();
+
+    loadCodingTable();
+
+    loadProjectTable();
+
+    updateMaster();
+
+    console.log("EPTOS data loaded");
+}
+
+
+/* =========================
+   AUTO SAVE
+   ========================= */
+
+window.addEventListener(
+    "beforeunload",
+    saveAllData
+);
+
+
+/* =========================
+   AUTO LOAD
+   ========================= */
+
+window.addEventListener(
+    "load",
+    loadAllData
+);
+
+
+/* =========================
+   OPTIONAL:
+   SAVE EVERY 10 SECONDS
+   ========================= */
+
+setInterval(saveAllData, 10000);
 </script>
