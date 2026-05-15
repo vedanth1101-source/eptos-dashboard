@@ -1391,8 +1391,7 @@ async function askCoach() {
     }
 
     // 2. Fetch Request to Gemini 1.5 Flash
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     // We add a system prompt wrapper to make it act like a strict tech interviewer
     const systemInstruction = "You are a strict, concise technical interview coach helping a student prep for software engineering placements. Answer in 3 sentences or less. Do not use markdown headers. The user says: ";
 
