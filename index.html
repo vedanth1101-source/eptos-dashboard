@@ -1,1428 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Placement War-Room</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
+/* --- OVERRIDDEN GLOBAL LIGHT VARIABLES --- */
+:root {
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #F8F9FA;
+  --color-background-danger: #fee2e2;
+  --color-background-warning: #fef3c7;
+  --color-background-success: #d1fae5;
+  --color-background-info: #dbeafe;
+  --color-border-secondary: #e5e7eb;
+  --color-border-tertiary: #f3f4f6;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-success: #059669;
+  --color-text-warning: #d97706;
+  --color-text-danger: #dc2626;
+  --color-text-info: #2563eb;
+  --font-sans: 'Inter', sans-serif;
+  --border-radius-md: 12px;
+  --border-radius-lg: 20px;
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)}
-.nav{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:1.25rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:0.75rem}
-.nav-btn{font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans);letter-spacing:0.03em}
-.nav-btn.on{background:var(--color-text-primary);color:var(--color-background-primary);border-color:transparent}
+body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary); background-color: #FDFCF8;}
+.font-serif { font-family: 'Lora', serif; }
+
+/* Existing class mappings for old tabs to fit new theme */
+.nav{display:none;} /* Hidden because we use sidebar now */
 .pane{display:none}.pane.on{display:block}
 .sec{margin-bottom:1.25rem}
-.sec-hdr{font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:6px}
-.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.1rem;margin-bottom:0.75rem}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.m{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:0.75rem;text-align:center}
-.m-val{font-size:22px;font-weight:500;line-height:1.1}
-.m-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.sec-hdr{font-size:12px;font-weight:600;color:var(--color-text-primary);margin-bottom:0.8rem;display:flex;align-items:center;gap:6px}
+.card{background:var(--color-background-primary);border:1px solid rgba(0,0,0,0.03);box-shadow: 0 4px 20px -2px rgba(0,0,0,0.03);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem;transition: transform 0.2s ease, box-shadow 0.2s ease;}
+.card:hover{transform: translateY(-2px);box-shadow: 0 8px 25px -5px rgba(0,0,0,0.05);}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.m{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;text-align:center;border:1px solid rgba(0,0,0,0.02)}
+.m-val{font-size:24px;font-weight:600;line-height:1.1}
+.m-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:4px}
 .m-sub{font-size:11px;margin-top:2px}
-.bar-wrap{height:5px;background:var(--color-border-tertiary);border-radius:3px;margin-top:6px;overflow:hidden}
-.bar{height:100%;border-radius:3px;transition:width 0.4s}
-.badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px}
+.bar-wrap{height:6px;background:var(--color-border-tertiary);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar{height:100%;border-radius:4px;transition:width 0.4s}
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:3px 8px;border-radius:12px}
 .b-r{background:var(--color-background-danger);color:var(--color-text-danger)}
 .b-a{background:var(--color-background-warning);color:var(--color-text-warning)}
 .b-g{background:var(--color-background-success);color:var(--color-text-success)}
 .b-b{background:var(--color-background-info);color:var(--color-text-info)}
 .b-n{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
 .tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-.tbl th{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-align:left;padding:5px 6px;border-bottom:0.5px solid var(--color-border-secondary);letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
-.tbl td{padding:6px 6px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tbl th{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-align:left;padding:8px 8px;border-bottom:1px solid var(--color-border-secondary);white-space:nowrap;overflow:hidden}
+.tbl td{padding:8px 8px;border-bottom:1px solid var(--color-border-tertiary);vertical-align:middle;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:var(--color-background-secondary)}
 .inp{width:100%;font-size:12px;font-family:var(--font-sans);background:transparent;border:none;color:var(--color-text-primary);padding:0}
 .inp:focus{outline:none}
-.mini-inp{font-size:11px;padding:3px 6px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans);width:100%}
-.chk{width:15px;height:15px;border:1.5px solid var(--color-border-secondary);border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent}
+.chk{width:16px;height:16px;border:1.5px solid var(--color-border-secondary);border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent}
 .chk.on{background:var(--color-text-success);border-color:var(--color-text-success)}
 .stars{display:flex;gap:2px;cursor:pointer}
-.star{width:12px;height:12px;border-radius:2px;background:var(--color-border-tertiary)}
+.star{width:14px;height:14px;border-radius:3px;background:var(--color-border-tertiary)}
 .star.on{background:var(--color-text-warning)}
-.add-row-btn{font-size:11px;padding:4px 10px;border-radius:4px;border:0.5px dashed var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans);margin-top:6px}
+.add-row-btn{font-size:11px;padding:6px 12px;border-radius:6px;border:1px dashed var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-weight:500;margin-top:6px}
 .add-row-btn:hover{background:var(--color-background-secondary)}
-.del-btn{font-size:10px;padding:2px 6px;border-radius:3px;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans)}
+.del-btn{font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
 .del-btn:hover{background:var(--color-background-danger);color:var(--color-text-danger);border-color:var(--color-border-danger,var(--color-border-tertiary))}
-.streak-box{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px}
-.streak-day{width:14px;height:14px;border-radius:2px;background:var(--color-border-tertiary)}
-.streak-day.done{background:var(--color-text-success)}
-.streak-day.today{background:var(--color-text-info)}
-.week-score{display:flex;gap:6px;align-items:center}
-.ws-bar{flex:1;height:8px;background:var(--color-border-tertiary);border-radius:4px;overflow:hidden}
-.ws-fill{height:100%;border-radius:4px;background:var(--color-text-success)}
-.ring{position:relative;display:inline-flex;align-items:center;justify-content:center}
-.ring svg{transform:rotate(-90deg)}
-.ring-txt{position:absolute;text-align:center}
-.action-btn{font-size:11px;padding:5px 12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans);margin:3px 3px 0 0}
+.action-btn{font-size:12px;padding:8px 16px;border-radius:20px;border:1px solid var(--color-border-secondary);background:white;color:var(--color-text-primary);cursor:pointer;font-weight:500;margin:4px 4px 0 0;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
 .action-btn:hover{background:var(--color-background-secondary)}
-.priority-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+.priority-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+
+/* Custom UI Overrides for the new aesthetic */
+.streak-day { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; cursor: pointer; background: #F3F4F6; color: #9CA3AF; transition: all 0.2s; }
+.streak-day.done { background: #22C55E; color: white; }
+.streak-day.today { border: 2px solid #3b82f6; }
+.nav-sidebar-btn { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 13px; color: #4B5563; transition: all 0.2s; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; }
+.nav-sidebar-btn:hover { background: #F3F4F6; }
+.nav-sidebar-btn.on { background: #FFF4ED; color: #D95F18; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 10px; }
 </style>
+</head>
+<body class="flex h-screen overflow-hidden">
 
-<h2 style="position:absolute;left:-9999px">EPTOS Placement War-Room Dashboard — full interactive tracking system</h2>
-
-<div style="padding:0 0 2rem">
-
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-  <div>
-    <div style="font-size:17px;font-weight:500">Placement war-room</div>
-    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">EPTOS · C++ · Day <span id="cur-day">1</span> of 40 · <span id="cur-date"></span></div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <div style="text-align:right">
-      <div style="font-size:10px;color:var(--color-text-secondary)">Readiness</div>
-      <div style="font-size:20px;font-weight:500;color:var(--color-text-danger)" id="readiness-display">18%</div>
-    </div>
-    <div style="text-align:right">
-      <div style="font-size:10px;color:var(--color-text-secondary)">Streak</div>
-      <div style="font-size:20px;font-weight:500;color:var(--color-text-info)" id="streak-display">0d</div>
-    </div>
-  </div>
-</div>
-
-<div class="nav">
-  <button class="nav-btn on" onclick="sw('master',this)"><i class="ti ti-layout-dashboard" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Master</button>
-  <button class="nav-btn" onclick="sw('daily',this)"><i class="ti ti-calendar" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Daily sheet</button>
-  <button class="nav-btn" onclick="sw('coding',this)"><i class="ti ti-code" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Coding</button>
-  <button class="nav-btn" onclick="sw('project',this)"><i class="ti ti-device-laptop" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Project</button>
-  <button class="nav-btn" onclick="sw('comm',this)"><i class="ti ti-microphone" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Communication</button>
-  <button class="nav-btn" onclick="sw('aptitude',this)"><i class="ti ti-brain" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Aptitude</button>
-  <button class="nav-btn" onclick="sw('weekly',this)"><i class="ti ti-chart-bar" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Weekly review</button>
-</div>
-
-<div id="pane-master" class="pane on">
-  <div class="sec">
-    <div class="g4">
-      <div class="m">
-        <div class="m-val" id="overall-pct" style="color:var(--color-text-danger)">0%</div>
-        <div class="m-lbl">Overall progress</div>
-        <div class="bar-wrap"><div class="bar" id="bar-overall" style="width:0%;background:var(--color-text-danger)"></div></div>
-      </div>
-      <div class="m">
-        <div class="m-val" id="coding-score" style="color:var(--color-text-warning)">0%</div>
-        <div class="m-lbl">Coding score</div>
-        <div class="bar-wrap"><div class="bar" id="bar-coding" style="width:0%;background:var(--color-text-warning)"></div></div>
-      </div>
-      <div class="m">
-        <div class="m-val" id="apt-score" style="color:var(--color-text-info)">0%</div>
-        <div class="m-lbl">Aptitude score</div>
-        <div class="bar-wrap"><div class="bar" id="bar-apt" style="width:0%;background:var(--color-text-info)"></div></div>
-      </div>
-      <div class="m">
-        <div class="m-val" id="comm-score" style="color:var(--color-text-success)">0%</div>
-        <div class="m-lbl">Communication</div>
-        <div class="bar-wrap"><div class="bar" id="bar-comm" style="width:0%;background:var(--color-text-success)"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="g2" style="margin-bottom:0.75rem">
-    <div class="card" style="margin-bottom:0">
-      <div class="sec-hdr"><i class="ti ti-target" aria-hidden="true"></i>Score inputs</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;width:110px;flex-shrink:0;color:var(--color-text-secondary)">LC solved (0–150)</span>
-          <input type="range" min="0" max="150" value="0" step="1" id="lc-solved" oninput="updateMaster()" style="flex:1">
-          <span style="font-size:12px;font-weight:500;min-width:28px;text-align:right" id="lc-display">0</span>
+<aside class="w-64 bg-white border-r border-gray-100 flex flex-col justify-between p-6 shrink-0 z-20">
+    <div>
+        <div class="flex items-center gap-3 mb-10">
+            <div class="text-orange-400 text-2xl">✦</div>
+            <div>
+                <h2 class="font-serif font-semibold text-lg leading-tight">Placement</h2>
+                <p class="text-xs text-gray-500">War-Room</p>
+            </div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;width:110px;flex-shrink:0;color:var(--color-text-secondary)">Aptitude acc. %</span>
-          <input type="range" min="0" max="100" value="0" step="1" id="apt-acc" oninput="updateMaster()" style="flex:1">
-          <span style="font-size:12px;font-weight:500;min-width:28px;text-align:right" id="apt-display">0%</span>
+        <nav class="space-y-1">
+            <button class="nav-sidebar-btn on" onclick="sw('master',this)"><span>🏠</span> Dashboard</button>
+            <button class="nav-sidebar-btn" onclick="sw('daily',this)"><span>📅</span> Daily Sheet</button>
+            <button class="nav-sidebar-btn" onclick="sw('coding',this)"><span>&lt;/&gt;</span> Coding</button>
+            <button class="nav-sidebar-btn" onclick="sw('aptitude',this)"><span>📊</span> Aptitude</button>
+            <button class="nav-sidebar-btn" onclick="sw('comm',this)"><span>💬</span> Communication</button>
+            <button class="nav-sidebar-btn" onclick="sw('project',this)"><span>💻</span> Project</button>
+            <button class="nav-sidebar-btn" onclick="sw('weekly',this)"><span>📈</span> Weekly Review</button>
+        </nav>
+    </div>
+    <div class="space-y-4">
+        <div class="card !p-3 flex items-center gap-3 !mb-0 !shadow-sm">
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-xl">👨🏽‍💻</div>
+            <div><h4 class="font-semibold text-sm">Vedanth</h4><p class="text-xs text-gray-500">Level 3 • 420 XP</p></div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;width:110px;flex-shrink:0;color:var(--color-text-secondary)">Project % done</span>
-          <input type="range" min="0" max="100" value="0" step="1" id="proj-pct" oninput="updateMaster()" style="flex:1">
-          <span style="font-size:12px;font-weight:500;min-width:28px;text-align:right" id="proj-display">0%</span>
+        <div class="bg-[#FFF4ED] rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">🔥</span>
+                <h3 class="font-serif text-2xl font-semibold text-[#D95F18]" id="streak-display">0d</h3>
+            </div>
+            <p class="text-xs font-medium text-[#D95F18]">Day Streak</p>
+            <p class="text-[10px] text-orange-400 mt-1">Keep it going!</p>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;width:110px;flex-shrink:0;color:var(--color-text-secondary)">English conf. /10</span>
-          <input type="range" min="0" max="10" value="3" step="1" id="eng-conf" oninput="updateMaster()" style="flex:1">
-          <span style="font-size:12px;font-weight:500;min-width:28px;text-align:right" id="eng-display">3</span>
+    </div>
+</aside>
+
+<main class="flex-1 overflow-y-auto p-8 relative">
+    
+    <header class="flex justify-between items-end mb-8">
+        <div>
+            <h1 class="font-serif text-3xl font-semibold mb-1 text-gray-900">Good evening, Vedanth <span class="text-2xl">👋</span></h1>
+            <p class="text-sm text-gray-500">Day <span id="cur-day">1</span> of 40 <span class="mx-2">•</span> EPTOS Mission <span class="mx-2">•</span> <span id="cur-date"></span></p>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;width:110px;flex-shrink:0;color:var(--color-text-secondary)">HR mocks done</span>
-          <input type="range" min="0" max="20" value="0" step="1" id="hr-mocks" oninput="updateMaster()" style="flex:1">
-          <span style="font-size:12px;font-weight:500;min-width:28px;text-align:right" id="hr-display">0</span>
+        <div class="flex gap-3">
+            <button class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-sm text-gray-700">
+                ◎ Focus Mode
+            </button>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;width:110px;flex-shrink:0;color:var(--color-text-secondary)">Consistency %</span>
-          <input type="range" min="0" max="100" value="0" step="1" id="consist" oninput="updateMaster()" style="flex:1">
-          <span style="font-size:12px;font-weight:500;min-width:28px;text-align:right" id="consist-display">0%</span>
+    </header>
+
+    <div id="pane-master" class="pane on">
+        
+        <div class="grid grid-cols-12 gap-6 mb-6">
+            
+            <div class="col-span-8 bg-[#FFF9F5] rounded-[2rem] p-8 relative overflow-hidden flex flex-col justify-center border border-[#FFE8D6]">
+                <h2 class="font-serif text-4xl font-semibold leading-tight text-[#2D2D2D] relative z-10">
+                    Small steps today,<br><span class="text-[#D95F18]">big results</span> tomorrow.
+                </h2>
+                <p class="text-sm text-gray-600 mt-4 max-w-xs relative z-10">Stay consistent, trust the process, and the results will follow.</p>
+                <button class="mt-6 px-6 py-3 bg-[#2D2D2D] text-white rounded-xl w-max text-sm font-medium hover:bg-black transition-colors relative z-10 shadow-lg">
+                    Start Today's Focus →
+                </button>
+                <div class="absolute right-[-5%] bottom-[-20%] w-64 h-64 bg-[#FFE5D4] rounded-full opacity-50 mix-blend-multiply blur-2xl"></div>
+                <div class="absolute right-[10%] top-[10%] text-6xl opacity-20">⛰️</div>
+            </div>
+
+            <div class="col-span-4 bg-[#F8F5FF] rounded-[2rem] p-6 border border-[#EBE3FF] flex flex-col">
+                <div class="flex items-center gap-2 mb-4">
+                    <h3 class="font-serif text-lg font-semibold text-[#4B2E83]">AI Coach</h3>
+                    <span class="text-[10px] bg-white text-[#4B2E83] px-2 py-0.5 rounded-full font-semibold border border-[#EBE3FF]">Beta</span>
+                </div>
+                <p class="text-xs font-semibold text-gray-800 mb-1">Your consistency is key.</p>
+                <p class="text-[11px] text-gray-600 mb-4 line-clamp-2">Main risk: Inconsistent execution. Suggested focus: Morning coding block.</p>
+                <div class="mt-auto">
+                    <input type="text" id="ai-prompt" placeholder="Ask a LeetCode question..." class="w-full bg-white text-xs p-3 rounded-xl border border-[#EBE3FF] mb-2 outline-none focus:border-[#4B2E83]">
+                    <button onclick="askCoach()" class="w-full py-2.5 bg-white text-[#4B2E83] border border-[#EBE3FF] rounded-xl text-sm font-semibold hover:bg-[#F0EBFF] transition-colors shadow-sm">
+                        Chat with Coach →
+                    </button>
+                    <div id="ai-response" class="mt-2 text-[11px] text-gray-600"></div>
+                </div>
+            </div>
+
+            <div class="col-span-8">
+                <div class="flex justify-between items-center mb-4"><h3 class="font-serif font-semibold text-lg text-gray-900">Today's Focus</h3></div>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="card !p-4 flex flex-col !bg-[#F4FBFA] !border-[#E0F2F1] !mb-0"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#0D9488] mb-3 text-sm shadow-sm">&lt;/&gt;</div><p class="text-xs font-medium text-gray-800 mb-4">Solve 2 LC problems</p></div>
+                    <div class="card !p-4 flex flex-col !bg-[#FFF9F0] !border-[#FEF3C7] !mb-0"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#D97706] mb-3 text-sm shadow-sm">📊</div><p class="text-xs font-medium text-gray-800 mb-4">Aptitude sprint</p></div>
+                    <div class="card !p-4 flex flex-col !bg-[#F4F6FF] !border-[#E0E7FF] !mb-0"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#4F46E5] mb-3 text-sm shadow-sm">👥</div><p class="text-xs font-medium text-gray-800 mb-4">HR mock</p></div>
+                    <div class="card !p-4 flex flex-col !bg-[#FAF5FF] !border-[#F3E8FF] !mb-0"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#9333EA] mb-3 text-sm shadow-sm">💬</div><p class="text-xs font-medium text-gray-800 mb-4">English speaking</p></div>
+                </div>
+            </div>
+
+             <div class="col-span-4 card flex flex-col !mb-0">
+                <h3 class="font-serif font-semibold text-lg mb-4 text-gray-900">40-Day Tracker</h3>
+                <div id="streak-grid" class="flex flex-wrap gap-1 mb-2"></div>
+                <p class="text-xs text-gray-500 mt-auto pt-2 border-t border-gray-100">Click a day to mark complete.</p>
+            </div>
+
+            <div class="col-span-8 grid grid-cols-2 gap-6">
+                <div class="card flex flex-col justify-center items-center !mb-0">
+                    <h3 class="font-serif font-semibold text-lg self-start w-full mb-2 text-gray-900">Overall Progress</h3>
+                    <div class="relative w-32 h-32 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-gray-100" stroke-width="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="text-[#8B5CF6]" stroke-dasharray="100, 100" stroke-width="4" stroke="currentColor" fill="none" stroke-linecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circle-progress" style="transition: stroke-dasharray 0.5s;" />
+                        </svg>
+                        <div class="absolute text-center"><span class="text-2xl font-bold text-gray-900" id="readiness-display">0%</span></div>
+                    </div>
+                </div>
+                <div class="card !mb-0">
+                    <h3 class="font-serif font-semibold text-lg mb-4 text-gray-900">Weekly Progress</h3>
+                    <div class="h-32 relative"><canvas id="readinessChart"></canvas></div>
+                </div>
+            </div>
+            
+            <div class="col-span-4 card flex flex-col !mb-0">
+                <h3 class="font-serif font-semibold text-lg mb-4 text-gray-900">Status Analysis</h3>
+                <div id="status-analysis" class="text-xs text-gray-600 space-y-2"></div>
+            </div>
+
+        </div> <div class="card bg-gray-50 border-dashed border-2 border-gray-200 shadow-none">
+            <div class="sec-hdr text-gray-500 mb-4">⚙️ Data Inputs (Drives the charts above)</div>
+            <div class="g3">
+                <div class="flex flex-col gap-1">
+                    <span class="text-xs text-gray-500 flex justify-between">LC solved (0–150) <span id="lc-display" class="font-bold">0</span></span>
+                    <input type="range" min="0" max="150" value="0" step="1" id="lc-solved" oninput="updateMaster()" class="w-full accent-blue-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-xs text-gray-500 flex justify-between">Aptitude acc. % <span id="apt-display" class="font-bold">0%</span></span>
+                    <input type="range" min="0" max="100" value="0" step="1" id="apt-acc" oninput="updateMaster()" class="w-full accent-blue-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-xs text-gray-500 flex justify-between">Project % done <span id="proj-display" class="font-bold">0%</span></span>
+                    <input type="range" min="0" max="100" value="0" step="1" id="proj-pct" oninput="updateMaster()" class="w-full accent-blue-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-xs text-gray-500 flex justify-between">English conf. /10 <span id="eng-display" class="font-bold">3</span></span>
+                    <input type="range" min="0" max="10" value="3" step="1" id="eng-conf" oninput="updateMaster()" class="w-full accent-blue-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-xs text-gray-500 flex justify-between">HR mocks done <span id="hr-display" class="font-bold">0</span></span>
+                    <input type="range" min="0" max="20" value="0" step="1" id="hr-mocks" oninput="updateMaster()" class="w-full accent-blue-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-xs text-gray-500 flex justify-between">Consistency % <span id="consist-display" class="font-bold">0%</span></span>
+                    <input type="range" min="0" max="100" value="0" step="1" id="consist" oninput="updateMaster()" class="w-full accent-blue-500">
+                </div>
+            </div>
+            <div class="hidden"><span id="overall-pct"></span><span id="coding-score"></span><span id="apt-score"></span><span id="comm-score"></span><div id="bar-overall"></div><div id="bar-coding"></div><div id="bar-apt"></div><div id="bar-comm"></div></div>
+        </div>
+
+    </div> <div id="pane-daily" class="pane">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-table" aria-hidden="true"></i>Daily execution sheet</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;color:var(--color-text-secondary)">Completion:</span>
+            <span style="font-size:13px;font-weight:500;color:var(--color-text-success)" id="daily-pct">0%</span>
+            <button class="add-row-btn" onclick="addDailyRow()">+ Add row</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+        <table class="tbl" id="daily-tbl">
+          <thead>
+            <tr>
+              <th style="width:70px">Time</th>
+              <th style="width:140px">Task</th>
+              <th style="width:80px">Category</th>
+              <th style="width:44px">Priority</th>
+              <th style="width:44px">Est. min</th>
+              <th style="width:44px">Act. min</th>
+              <th style="width:30px">Done</th>
+              <th style="width:50px">Focus</th>
+              <th style="width:60px">Difficulty</th>
+              <th style="width:36px">ROI</th>
+              <th style="width:100px">Notes</th>
+              <th style="width:30px"></th>
+            </tr>
+          </thead>
+          <tbody id="daily-body"></tbody>
+        </table>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:12px;font-size:11px;color:var(--color-text-secondary)">
+          <span><span class="priority-dot" style="background:var(--color-text-danger)"></span>P1 Critical</span>
+          <span><span class="priority-dot" style="background:var(--color-text-warning)"></span>P2 High</span>
+          <span><span class="priority-dot" style="background:var(--color-text-info)"></span>P3 Medium</span>
+          <span><span class="priority-dot" style="background:var(--color-border-secondary)"></span>P4 Low</span>
         </div>
       </div>
     </div>
-
-    <div class="card" style="margin-bottom:0">
-      <div class="sec-hdr"><i class="ti ti-flame" aria-hidden="true"></i>40-day streak grid</div>
-      <div class="streak-box" id="streak-grid"></div>
-      <div style="margin-top:10px;font-size:11px;color:var(--color-text-secondary)">Click a day to mark complete</div>
-      <div style="margin-top:10px">
-        <div class="sec-hdr" style="margin-bottom:4px"><i class="ti ti-chart-line" aria-hidden="true"></i>Weekly performance</div>
-        <div style="position: relative; width: 100%; height: 160px; margin-top: 8px;">
-          <canvas id="readinessChart"></canvas>
+    
+    <div id="pane-coding" class="pane">
+      <div class="g3" style="margin-bottom:0.75rem">
+        <div class="m"><div class="m-val" id="c-total">0</div><div class="m-lbl">Total solved</div><div class="bar-wrap"><div class="bar" id="c-bar-total" style="width:0%;background:var(--color-text-info)"></div></div></div>
+        <div class="m"><div class="m-val" id="c-acc">—</div><div class="m-lbl">Avg accuracy</div><div class="bar-wrap"><div class="bar" id="c-bar-acc" style="width:0%;background:var(--color-text-success)"></div></div></div>
+        <div class="m"><div class="m-val" id="c-streak">0</div><div class="m-lbl">Coding streak</div><div class="bar-wrap"><div class="bar" id="c-bar-streak" style="width:0%;background:var(--color-text-warning)"></div></div></div>
+      </div>
+    
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-code" aria-hidden="true"></i>Problem log</div>
+          <button class="add-row-btn" onclick="addCodingRow()">+ Add problem</button>
+        </div>
+        <div style="overflow-x:auto">
+        <table class="tbl" id="coding-tbl">
+          <thead>
+            <tr>
+              <th style="width:28px">#</th>
+              <th style="width:130px">Problem name</th>
+              <th style="width:75px">Topic</th>
+              <th style="width:55px">Difficulty</th>
+              <th style="width:44px">Time (min)</th>
+              <th style="width:50px">Solved?</th>
+              <th style="width:55px">Accuracy</th>
+              <th style="width:44px">Revisions</th>
+              <th style="width:80px">Weak pattern</th>
+              <th style="width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="coding-body"></tbody>
+        </table>
+        </div>
+      </div>
+    
+      <div class="card">
+        <div class="sec-hdr"><i class="ti ti-chart-bar" aria-hidden="true"></i>Topic mastery tracker</div>
+        <div id="topic-mastery" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+    
+    <div id="pane-project" class="pane">
+      <div class="g4" style="margin-bottom:0.75rem">
+        <div class="m"><div class="m-val" id="p-commits">0</div><div class="m-lbl">GitHub commits</div></div>
+        <div class="m"><div class="m-val" id="p-features">0/12</div><div class="m-lbl">Features done</div></div>
+        <div class="m"><div class="m-val" id="p-bugs">0</div><div class="m-lbl">Bugs fixed</div></div>
+        <div class="m"><div class="m-val" id="p-deploy" style="color:var(--color-text-danger)">No</div><div class="m-lbl">Deployed</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-device-laptop" aria-hidden="true"></i>Feature tracker</div>
+          <button class="add-row-btn" onclick="addProjectRow()">+ Add feature</button>
+        </div>
+        <div style="overflow-x:auto">
+        <table class="tbl" id="project-tbl">
+          <thead>
+            <tr>
+              <th style="width:130px">Feature</th>
+              <th style="width:65px">Module</th>
+              <th style="width:55px">Status</th>
+              <th style="width:44px">Priority</th>
+              <th style="width:55px">Est. hrs</th>
+              <th style="width:55px">Act. hrs</th>
+              <th style="width:30px">Done</th>
+              <th style="width:80px">Notes</th>
+              <th style="width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="project-body"></tbody>
+        </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-hdr"><i class="ti ti-gauge" aria-hidden="true"></i>Progress by module</div>
+        <div id="proj-modules" style="display:flex;flex-direction:column;gap:7px"></div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--color-text-secondary)">Deployment status:</span>
+          <select id="deploy-select" onchange="updateDeployStatus()" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
+            <option value="no">Not started</option>
+            <option value="local">Running locally</option>
+            <option value="staging">Staging deployed</option>
+            <option value="live">Live on Vercel</option>
+          </select>
+          <span style="font-size:12px;color:var(--color-text-secondary)">Resume-ready:</span>
+          <select id="resume-ready" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
+            <option>No</option><option>Partially</option><option>Yes</option>
+          </select>
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="sec-hdr"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Status analysis</div>
-    <div id="status-analysis" style="font-size:12px;line-height:1.8;color:var(--color-text-secondary)">Update sliders above to see your live analysis.</div>
-  </div>
-
-  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
-    <button class="action-btn" onclick="sendPrompt('Run my daily accountability check — ask me the 5 review questions now')">Daily check-in ↗</button>
-    <button class="action-btn" onclick="sendPrompt('Analyze my progress and tell me exactly what to focus on today')">Get today\'s priority ↗</button>
-    <button class="action-btn" onclick="sendPrompt('Give me a timed mock coding round — 2 problems, 45 min, C++, examiner mode')">Mock coding round ↗</button>
-  </div>
-</div>
-
-<div id="pane-daily" class="pane">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-      <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-table" aria-hidden="true"></i>Daily execution sheet</div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <span style="font-size:11px;color:var(--color-text-secondary)">Completion:</span>
-        <span style="font-size:13px;font-weight:500;color:var(--color-text-success)" id="daily-pct">0%</span>
-        <button class="add-row-btn" onclick="addDailyRow()">+ Add row</button>
+    
+    <div id="pane-comm" class="pane">
+      <div class="g4" style="margin-bottom:0.75rem">
+        <div class="m"><div class="m-val" id="cm-speak">0</div><div class="m-lbl">Speaking mins today</div></div>
+        <div class="m"><div class="m-val" id="cm-mocks">0</div><div class="m-lbl">HR mocks done</div></div>
+        <div class="m"><div class="m-val" id="cm-vocab">0</div><div class="m-lbl">Vocab words learned</div></div>
+        <div class="m"><div class="m-val" id="cm-conf">3/10</div><div class="m-lbl">Confidence score</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-microphone" aria-hidden="true"></i>Mock interview log</div>
+          <button class="add-row-btn" onclick="addCommRow()">+ Add session</button>
+        </div>
+        <div style="overflow-x:auto">
+        <table class="tbl" id="comm-tbl">
+          <thead>
+            <tr>
+              <th style="width:55px">Date</th>
+              <th style="width:80px">Session type</th>
+              <th style="width:110px">Questions practiced</th>
+              <th style="width:55px">Duration</th>
+              <th style="width:55px">Confidence</th>
+              <th style="width:55px">Fluency</th>
+              <th style="width:100px">Improvements noted</th>
+              <th style="width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="comm-body"></tbody>
+        </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-hdr"><i class="ti ti-list-check" aria-hidden="true"></i>HR answer mastery</div>
+        <div id="hr-mastery" style="display:flex;flex-direction:column;gap:5px"></div>
       </div>
     </div>
-    <div style="overflow-x:auto">
-    <table class="tbl" id="daily-tbl">
-      <thead>
-        <tr>
-          <th style="width:70px">Time</th>
-          <th style="width:140px">Task</th>
-          <th style="width:80px">Category</th>
-          <th style="width:44px">Priority</th>
-          <th style="width:44px">Est. min</th>
-          <th style="width:44px">Act. min</th>
-          <th style="width:30px">Done</th>
-          <th style="width:50px">Focus</th>
-          <th style="width:60px">Difficulty</th>
-          <th style="width:36px">ROI</th>
-          <th style="width:100px">Notes</th>
-          <th style="width:30px"></th>
-        </tr>
-      </thead>
-      <tbody id="daily-body"></tbody>
-    </table>
+    
+    <div id="pane-aptitude" class="pane">
+      <div class="g4" style="margin-bottom:0.75rem">
+        <div class="m"><div class="m-val" id="ap-acc">0%</div><div class="m-lbl">Overall accuracy</div><div class="bar-wrap"><div class="bar" id="ap-bar" style="width:0%;background:var(--color-text-warning)"></div></div></div>
+        <div class="m"><div class="m-val" id="ap-speed">—</div><div class="m-lbl">Avg sec/question</div></div>
+        <div class="m"><div class="m-val" id="ap-mocks">0</div><div class="m-lbl">Mocks completed</div></div>
+        <div class="m"><div class="m-val" id="ap-weak">—</div><div class="m-lbl">Weakest topic</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-brain" aria-hidden="true"></i>Mock test log</div>
+          <button class="add-row-btn" onclick="addAptRow()">+ Add mock test</button>
+        </div>
+        <div style="overflow-x:auto">
+        <table class="tbl" id="apt-tbl">
+          <thead>
+            <tr>
+              <th style="width:55px">Date</th>
+              <th style="width:80px">Topics covered</th>
+              <th style="width:44px">Score %</th>
+              <th style="width:55px">Time taken</th>
+              <th style="width:55px">Speed (s/Q)</th>
+              <th style="width:80px">Weak areas</th>
+              <th style="width:100px">Mistakes noted</th>
+              <th style="width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="apt-body"></tbody>
+        </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-hdr"><i class="ti ti-chart-bar" aria-hidden="true"></i>Topic mastery — aptitude</div>
+        <div id="apt-topics" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
     </div>
-    <div style="margin-top:8px;display:flex;gap:12px;font-size:11px;color:var(--color-text-secondary)">
-      <span><span class="priority-dot" style="background:var(--color-text-danger)"></span>P1 Critical</span>
-      <span><span class="priority-dot" style="background:var(--color-text-warning)"></span>P2 High</span>
-      <span><span class="priority-dot" style="background:var(--color-text-info)"></span>P3 Medium</span>
-      <span><span class="priority-dot" style="background:var(--color-border-secondary)"></span>P4 Low</span>
+    
+    <div id="pane-weekly" class="pane">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-calendar-stats" aria-hidden="true"></i>Weekly review</div>
+          <select id="week-select" onchange="loadWeek()" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
+            <option value="1">Week 1 (Days 1–10)</option>
+            <option value="2">Week 2 (Days 11–20)</option>
+            <option value="3">Week 3 (Days 21–30)</option>
+            <option value="4">Week 4 (Days 31–40)</option>
+          </select>
+        </div>
+        <div class="g4" style="margin-bottom:0.75rem">
+          <div class="m"><div class="m-val" id="w-lc">—</div><div class="m-lbl">LC solved</div></div>
+          <div class="m"><div class="m-val" id="w-apt">—</div><div class="m-lbl">Apt. accuracy</div></div>
+          <div class="m"><div class="m-val" id="w-hr">—</div><div class="m-lbl">HR mocks</div></div>
+          <div class="m"><div class="m-val" id="w-cons">—</div><div class="m-lbl">Consistency</div></div>
+        </div>
+      </div>
+    
+      <div class="g2">
+        <div class="card" style="margin-bottom:0">
+          <div class="sec-hdr"><i class="ti ti-trophy" aria-hidden="true"></i>Wins this week</div>
+          <textarea id="w-wins" placeholder="What went well? What did you complete?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="sec-hdr"><i class="ti ti-x" aria-hidden="true"></i>Failures &amp; misses</div>
+          <textarea id="w-fails" placeholder="What did you skip? What went wrong?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="sec-hdr"><i class="ti ti-barrier-block" aria-hidden="true"></i>Bottlenecks &amp; distractions</div>
+          <textarea id="w-blocks" placeholder="What slowed you down? What distracted you?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="sec-hdr"><i class="ti ti-refresh" aria-hidden="true"></i>Strategy changes for next week</div>
+          <textarea id="w-strategy" placeholder="What will you do differently? What needs to change?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
+        </div>
+      </div>
+      <div class="card" style="margin-top:0.75rem">
+        <div class="sec-hdr"><i class="ti ti-arrow-right" aria-hidden="true"></i>Next week top 3 priorities</div>
+        <div style="display:flex;flex-direction:column;gap:6px" id="next-priorities">
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-danger);width:16px;flex-shrink:0">P1</span><input type="text" placeholder="Most important focus next week" style="flex:1;font-size:12px"></div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-warning);width:16px;flex-shrink:0">P2</span><input type="text" placeholder="Second priority" style="flex:1;font-size:12px"></div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-info);width:16px;flex-shrink:0">P3</span><input type="text" placeholder="Third priority" style="flex:1;font-size:12px"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-hdr"><i class="ti ti-hash" aria-hidden="true"></i>Week hash generator</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Fill the weekly metrics above, then generate your hash to carry into the next chat session.</div>
+        <div class="g2" style="margin-bottom:8px">
+          <div><label style="font-size:11px;color:var(--color-text-secondary)">LC solved (total)</label><input type="number" id="h-lc" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
+          <div><label style="font-size:11px;color:var(--color-text-secondary)">Aptitude acc %</label><input type="number" id="h-apt" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
+          <div><label style="font-size:11px;color:var(--color-text-secondary)">HR mocks done</label><input type="number" id="h-hr" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
+          <div><label style="font-size:11px;color:var(--color-text-secondary)">Consistency %</label><input type="number" id="h-cons" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
+          <div><label style="font-size:11px;color:var(--color-text-secondary)">Project % done</label><input type="number" id="h-proj" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
+          <div><label style="font-size:11px;color:var(--color-text-secondary)">Weak area</label><input type="text" id="h-weak" placeholder="e.g. Two pointers" style="width:100%;margin-top:3px;font-size:12px"></div>
+        </div>
+        <button class="action-btn" style="font-size:12px;padding:6px 16px" onclick="genHash()">Generate &amp; send hash ↗</button>
+        <div id="hash-out" style="display:none;margin-top:8px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:0.6rem;font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);line-height:1.7;word-break:break-all"></div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div id="pane-coding" class="pane">
-  <div class="g3" style="margin-bottom:0.75rem">
-    <div class="m"><div class="m-val" id="c-total">0</div><div class="m-lbl">Total solved</div><div class="bar-wrap"><div class="bar" id="c-bar-total" style="width:0%;background:var(--color-text-info)"></div></div></div>
-    <div class="m"><div class="m-val" id="c-acc">—</div><div class="m-lbl">Avg accuracy</div><div class="bar-wrap"><div class="bar" id="c-bar-acc" style="width:0%;background:var(--color-text-success)"></div></div></div>
-    <div class="m"><div class="m-val" id="c-streak">0</div><div class="m-lbl">Coding streak</div><div class="bar-wrap"><div class="bar" id="c-bar-streak" style="width:0%;background:var(--color-text-warning)"></div></div></div>
-  </div>
+</main>
 
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-      <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-code" aria-hidden="true"></i>Problem log</div>
-      <button class="add-row-btn" onclick="addCodingRow()">+ Add problem</button>
-    </div>
-    <div style="overflow-x:auto">
-    <table class="tbl" id="coding-tbl">
-      <thead>
-        <tr>
-          <th style="width:28px">#</th>
-          <th style="width:130px">Problem name</th>
-          <th style="width:75px">Topic</th>
-          <th style="width:55px">Difficulty</th>
-          <th style="width:44px">Time (min)</th>
-          <th style="width:50px">Solved?</th>
-          <th style="width:55px">Accuracy</th>
-          <th style="width:44px">Revisions</th>
-          <th style="width:80px">Weak pattern</th>
-          <th style="width:28px"></th>
-        </tr>
-      </thead>
-      <tbody id="coding-body"></tbody>
-    </table>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="sec-hdr"><i class="ti ti-chart-bar" aria-hidden="true"></i>Topic mastery tracker</div>
-    <div id="topic-mastery" style="display:flex;flex-direction:column;gap:6px"></div>
-  </div>
-
-  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
-    <button class="action-btn" onclick="sendPrompt('Teach me Arrays pattern in C++ with 3 example problems and common mistakes')">Arrays deep-dive ↗</button>
-    <button class="action-btn" onclick="sendPrompt('Give me a timed mock coding round — 2 problems, 45 min, C++')">Mock round ↗</button>
-    <button class="action-btn" onclick="sendPrompt('Quiz me on time complexity — 10 questions, strict marking')">Complexity quiz ↗</button>
-  </div>
-</div>
-
-<div id="pane-project" class="pane">
-  <div class="g4" style="margin-bottom:0.75rem">
-    <div class="m"><div class="m-val" id="p-commits">0</div><div class="m-lbl">GitHub commits</div></div>
-    <div class="m"><div class="m-val" id="p-features">0/12</div><div class="m-lbl">Features done</div></div>
-    <div class="m"><div class="m-val" id="p-bugs">0</div><div class="m-lbl">Bugs fixed</div></div>
-    <div class="m"><div class="m-val" id="p-deploy" style="color:var(--color-text-danger)">No</div><div class="m-lbl">Deployed</div></div>
-  </div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-      <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-device-laptop" aria-hidden="true"></i>Feature tracker</div>
-      <button class="add-row-btn" onclick="addProjectRow()">+ Add feature</button>
-    </div>
-    <div style="overflow-x:auto">
-    <table class="tbl" id="project-tbl">
-      <thead>
-        <tr>
-          <th style="width:130px">Feature</th>
-          <th style="width:65px">Module</th>
-          <th style="width:55px">Status</th>
-          <th style="width:44px">Priority</th>
-          <th style="width:55px">Est. hrs</th>
-          <th style="width:55px">Act. hrs</th>
-          <th style="width:30px">Done</th>
-          <th style="width:80px">Notes</th>
-          <th style="width:28px"></th>
-        </tr>
-      </thead>
-      <tbody id="project-body"></tbody>
-    </table>
-    </div>
-  </div>
-  <div class="card">
-    <div class="sec-hdr"><i class="ti ti-gauge" aria-hidden="true"></i>Progress by module</div>
-    <div id="proj-modules" style="display:flex;flex-direction:column;gap:7px"></div>
-    <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-size:12px;color:var(--color-text-secondary)">Deployment status:</span>
-      <select id="deploy-select" onchange="updateDeployStatus()" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
-        <option value="no">Not started</option>
-        <option value="local">Running locally</option>
-        <option value="staging">Staging deployed</option>
-        <option value="live">Live on Vercel</option>
-      </select>
-      <span style="font-size:12px;color:var(--color-text-secondary)">Resume-ready:</span>
-      <select id="resume-ready" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
-        <option>No</option><option>Partially</option><option>Yes</option>
-      </select>
-    </div>
-  </div>
-  <button class="action-btn" onclick="sendPrompt('Start the AI Resume Analyzer project — give me Day 11 setup instructions for React + Node.js + Gemini API')">Start project setup ↗</button>
-</div>
-
-<div id="pane-comm" class="pane">
-  <div class="g4" style="margin-bottom:0.75rem">
-    <div class="m"><div class="m-val" id="cm-speak">0</div><div class="m-lbl">Speaking mins today</div></div>
-    <div class="m"><div class="m-val" id="cm-mocks">0</div><div class="m-lbl">HR mocks done</div></div>
-    <div class="m"><div class="m-val" id="cm-vocab">0</div><div class="m-lbl">Vocab words learned</div></div>
-    <div class="m"><div class="m-val" id="cm-conf">3/10</div><div class="m-lbl">Confidence score</div></div>
-  </div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-      <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-microphone" aria-hidden="true"></i>Mock interview log</div>
-      <button class="add-row-btn" onclick="addCommRow()">+ Add session</button>
-    </div>
-    <div style="overflow-x:auto">
-    <table class="tbl" id="comm-tbl">
-      <thead>
-        <tr>
-          <th style="width:55px">Date</th>
-          <th style="width:80px">Session type</th>
-          <th style="width:110px">Questions practiced</th>
-          <th style="width:55px">Duration</th>
-          <th style="width:55px">Confidence</th>
-          <th style="width:55px">Fluency</th>
-          <th style="width:100px">Improvements noted</th>
-          <th style="width:28px"></th>
-        </tr>
-      </thead>
-      <tbody id="comm-body"></tbody>
-    </table>
-    </div>
-  </div>
-  <div class="card">
-    <div class="sec-hdr"><i class="ti ti-list-check" aria-hidden="true"></i>HR answer mastery</div>
-    <div id="hr-mastery" style="display:flex;flex-direction:column;gap:5px"></div>
-  </div>
-  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
-    <button class="action-btn" onclick="sendPrompt('Conduct a full HR mock interview — ask me 5 questions, evaluate my English, correct grammar naturally')">HR mock interview ↗</button>
-    <button class="action-btn" onclick="sendPrompt('Help me build a strong 60-second self-introduction for placements')">Build self-intro ↗</button>
-  </div>
-</div>
-
-<div id="pane-aptitude" class="pane">
-  <div class="g4" style="margin-bottom:0.75rem">
-    <div class="m"><div class="m-val" id="ap-acc">0%</div><div class="m-lbl">Overall accuracy</div><div class="bar-wrap"><div class="bar" id="ap-bar" style="width:0%;background:var(--color-text-warning)"></div></div></div>
-    <div class="m"><div class="m-val" id="ap-speed">—</div><div class="m-lbl">Avg sec/question</div></div>
-    <div class="m"><div class="m-val" id="ap-mocks">0</div><div class="m-lbl">Mocks completed</div></div>
-    <div class="m"><div class="m-val" id="ap-weak">—</div><div class="m-lbl">Weakest topic</div></div>
-  </div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-      <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-brain" aria-hidden="true"></i>Mock test log</div>
-      <button class="add-row-btn" onclick="addAptRow()">+ Add mock test</button>
-    </div>
-    <div style="overflow-x:auto">
-    <table class="tbl" id="apt-tbl">
-      <thead>
-        <tr>
-          <th style="width:55px">Date</th>
-          <th style="width:80px">Topics covered</th>
-          <th style="width:44px">Score %</th>
-          <th style="width:55px">Time taken</th>
-          <th style="width:55px">Speed (s/Q)</th>
-          <th style="width:80px">Weak areas</th>
-          <th style="width:100px">Mistakes noted</th>
-          <th style="width:28px"></th>
-        </tr>
-      </thead>
-      <tbody id="apt-body"></tbody>
-    </table>
-    </div>
-  </div>
-  <div class="card">
-    <div class="sec-hdr"><i class="ti ti-chart-bar" aria-hidden="true"></i>Topic mastery — aptitude</div>
-    <div id="apt-topics" style="display:flex;flex-direction:column;gap:6px"></div>
-  </div>
-  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
-    <button class="action-btn" onclick="sendPrompt('Teach me Percentages for placement aptitude — key formulas, shortcuts, and 10 practice problems')">Percentages ↗</button>
-    <button class="action-btn" onclick="sendPrompt('Give me a 20-question timed aptitude mock test — mixed topics, examiner mode')">Aptitude mock ↗</button>
-    <button class="action-btn" onclick="sendPrompt('Teach me Time & Work shortcuts for placement aptitude')">Time & Work ↗</button>
-  </div>
-</div>
-
-<div id="pane-weekly" class="pane">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-      <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-calendar-stats" aria-hidden="true"></i>Weekly review</div>
-      <select id="week-select" onchange="loadWeek()" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
-        <option value="1">Week 1 (Days 1–10)</option>
-        <option value="2">Week 2 (Days 11–20)</option>
-        <option value="3">Week 3 (Days 21–30)</option>
-        <option value="4">Week 4 (Days 31–40)</option>
-      </select>
-    </div>
-    <div class="g4" style="margin-bottom:0.75rem">
-      <div class="m"><div class="m-val" id="w-lc">—</div><div class="m-lbl">LC solved</div></div>
-      <div class="m"><div class="m-val" id="w-apt">—</div><div class="m-lbl">Apt. accuracy</div></div>
-      <div class="m"><div class="m-val" id="w-hr">—</div><div class="m-lbl">HR mocks</div></div>
-      <div class="m"><div class="m-val" id="w-cons">—</div><div class="m-lbl">Consistency</div></div>
-    </div>
-  </div>
-
-  <div class="g2">
-    <div class="card" style="margin-bottom:0">
-      <div class="sec-hdr"><i class="ti ti-trophy" aria-hidden="true"></i>Wins this week</div>
-      <textarea id="w-wins" placeholder="What went well? What did you complete?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="sec-hdr"><i class="ti ti-x" aria-hidden="true"></i>Failures &amp; misses</div>
-      <textarea id="w-fails" placeholder="What did you skip? What went wrong?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="sec-hdr"><i class="ti ti-barrier-block" aria-hidden="true"></i>Bottlenecks &amp; distractions</div>
-      <textarea id="w-blocks" placeholder="What slowed you down? What distracted you?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="sec-hdr"><i class="ti ti-refresh" aria-hidden="true"></i>Strategy changes for next week</div>
-      <textarea id="w-strategy" placeholder="What will you do differently? What needs to change?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
-    </div>
-  </div>
-  <div class="card" style="margin-top:0.75rem">
-    <div class="sec-hdr"><i class="ti ti-arrow-right" aria-hidden="true"></i>Next week top 3 priorities</div>
-    <div style="display:flex;flex-direction:column;gap:6px" id="next-priorities">
-      <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-danger);width:16px;flex-shrink:0">P1</span><input type="text" placeholder="Most important focus next week" style="flex:1;font-size:12px"></div>
-      <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-warning);width:16px;flex-shrink:0">P2</span><input type="text" placeholder="Second priority" style="flex:1;font-size:12px"></div>
-      <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-info);width:16px;flex-shrink:0">P3</span><input type="text" placeholder="Third priority" style="flex:1;font-size:12px"></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="sec-hdr"><i class="ti ti-hash" aria-hidden="true"></i>Week hash generator</div>
-    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Fill the weekly metrics above, then generate your hash to carry into the next chat session.</div>
-    <div class="g2" style="margin-bottom:8px">
-      <div><label style="font-size:11px;color:var(--color-text-secondary)">LC solved (total)</label><input type="number" id="h-lc" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-      <div><label style="font-size:11px;color:var(--color-text-secondary)">Aptitude acc %</label><input type="number" id="h-apt" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-      <div><label style="font-size:11px;color:var(--color-text-secondary)">HR mocks done</label><input type="number" id="h-hr" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-      <div><label style="font-size:11px;color:var(--color-text-secondary)">Consistency %</label><input type="number" id="h-cons" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-      <div><label style="font-size:11px;color:var(--color-text-secondary)">Project % done</label><input type="number" id="h-proj" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-      <div><label style="font-size:11px;color:var(--color-text-secondary)">Weak area</label><input type="text" id="h-weak" placeholder="e.g. Two pointers" style="width:100%;margin-top:3px;font-size:12px"></div>
-    </div>
-    <button class="action-btn" style="font-size:12px;padding:6px 16px" onclick="genHash()">Generate &amp; send hash ↗</button>
-    <div id="hash-out" style="display:none;margin-top:8px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:0.6rem;font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);line-height:1.7;word-break:break-all"></div>
-  </div>
-</div>
-
-<div style="margin-top: 1.5rem; border-top: 1px solid var(--color-border-tertiary); padding-top: 1rem;">
-  <h3 style="font-size: 14px; margin-bottom: 8px; color: #3b82f6; font-weight: bold;">🤖 AI Interview Coach</h3>
-  <div style="display: flex; gap: 8px;">
-    <input type="text" id="ai-prompt" placeholder="Ask a C++ or LeetCode question..." style="flex: 1; padding: 8px; background: transparent; border: 1px solid var(--color-border-tertiary); color: var(--color-text-primary); border-radius: 4px; outline: none;">
-    <button onclick="askCoach()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s;">Ask</button>
-  </div>
-  <div id="ai-response" style="margin-top: 12px; font-size: 13px; color: var(--color-text-secondary); white-space: pre-wrap; line-height: 1.5;"></div>
-</div>
-
-</div>
-
-<script>
+<script>  
 var state={streak:[],weeklyScores:[0,0,0,0],codingRows:[],projectRows:[],commRows:[],aptRows:[]};
 
-function sw(name,el){
-  document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on')});
-  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('on')});
-  document.getElementById('pane-'+name).classList.add('on');
-  el.classList.add('on');
+function sw(name,el){  
+  document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on')});  
+  document.querySelectorAll('.nav-sidebar-btn').forEach(function(b){b.classList.remove('on')});  
+  document.getElementById('pane-'+name).classList.add('on');  
+  el.classList.add('on');  
 }
 
 document.getElementById('cur-date').textContent=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 
-function buildStreakGrid(){
-  var g=document.getElementById('streak-grid');
-  g.innerHTML='';
-  for(var i=0;i<40;i++){
-    var d=document.createElement('div');
-    d.className='streak-day'+(state.streak[i]?' done':'');
-    d.title='Day '+(i+1);
-    d.setAttribute('data-day',i);
-    d.onclick=function(){
-      var idx=parseInt(this.getAttribute('data-day'));
-      state.streak[idx]=!state.streak[idx];
-      buildStreakGrid();
-      var cnt=state.streak.filter(Boolean).length;
-      document.getElementById('streak-display').textContent=cnt+'d';
-      document.getElementById('cur-day').textContent=Math.max(1,cnt);
-      updateChartData(); // <-- This now safely updates the chart!
-      updateMaster();
-    };
-    g.appendChild(d);
-  }
-}
+function buildStreakGrid(){  
+  var g=document.getElementById('streak-grid');  
+  g.innerHTML='';  
+  for(var i=0;i<40;i++){  
+    var d=document.createElement('div');  
+    d.className='streak-day'+(state.streak[i]?' done':'');  
+    d.title='Day '+(i+1);  
+    d.setAttribute('data-day',i);  
+    d.onclick=function(){  
+      var idx=parseInt(this.getAttribute('data-day'));  
+      state.streak[idx]=!state.streak[idx];  
+      buildStreakGrid();  
+      var cnt=state.streak.filter(Boolean).length;  
+      document.getElementById('streak-display').textContent=cnt+'d';  
+      document.getElementById('cur-day').textContent=Math.max(1,cnt);  
+      updateChartData(); 
+      updateMaster();  
+    };  
+    g.appendChild(d);  
+  }  
+}  
 buildStreakGrid();
 
-// --- WEEKLY READINESS CHART ---
 var readinessChart;
 
-function initChart() {
-  // 🚨 THE FIX: Destroy the ghost chart before making a new one!
-  if (readinessChart) {
-      readinessChart.destroy();
-  }
+function initChart() {  
+  if (readinessChart) { readinessChart.destroy(); }
+  var ctx = document.getElementById('readinessChart').getContext('2d');  
+    
+  var gradient = ctx.createLinearGradient(0, 0, 0, 160);  
+  gradient.addColorStop(0, 'rgba(139, 92, 246, 0.2)'); // Purple match 
+  gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
 
-  var ctx = document.getElementById('readinessChart').getContext('2d');
-  
-  var gradient = ctx.createLinearGradient(0, 0, 0, 160);
-  gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
-  gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
-
-  readinessChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-          labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-          datasets: [{
-              label: 'Weekly Progress %',
-              data: [0, 0, 0, 0], 
-              borderColor: '#3b82f6', 
-              backgroundColor: gradient,
-              borderWidth: 2,
-              fill: true,
-              tension: 0.4, 
-              pointBackgroundColor: '#fff',
-              pointBorderColor: '#3b82f6',
-              pointBorderWidth: 2,
-              pointRadius: 4
-          }]
-      },
-      options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { 
-            y: { beginAtZero: true, max: 100, ticks: { display: false }, grid: { display: false } },
-            x: { grid: { display: false } }
-          }
-      }
-  });
-  
-  updateChartData(); 
+  readinessChart = new Chart(ctx, {  
+      type: 'line',  
+      data: {  
+          labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],  
+          datasets: [{  
+              label: 'Weekly Progress %',  
+              data: [0, 0, 0, 0],   
+              borderColor: '#8B5CF6',   
+              backgroundColor: gradient,  
+              borderWidth: 2,  
+              fill: true,  
+              tension: 0.4,   
+              pointBackgroundColor: '#fff',  
+              pointBorderColor: '#8B5CF6',  
+              pointBorderWidth: 2,  
+              pointRadius: 4  
+          }]  
+      },  
+      options: {  
+          responsive: true,  
+          maintainAspectRatio: false,  
+          plugins: { legend: { display: false } },  
+          scales: {   
+            y: { beginAtZero: true, max: 100, ticks: { display: false }, grid: { display: false } },  
+            x: { grid: { display: false } }  
+          }  
+      }  
+  });  
+  updateChartData();   
 }
 
-// Calculates your streak data and animates the chart
-function updateChartData(){
-  if(!readinessChart) return;
-  var weeks=[0,0,0,0];
-  for(var i=0;i<40;i++) if(state.streak[i]) weeks[Math.floor(i/10)]++;
-  
-  var actualData = weeks.map(function(w){ return Math.round((w/10)*100); });
-  readinessChart.data.datasets[0].data = actualData;
-  readinessChart.update();
+function updateChartData(){  
+  if(!readinessChart) return;  
+  var weeks=[0,0,0,0];  
+  for(var i=0;i<40;i++) if(state.streak[i]) weeks[Math.floor(i/10)]++;  
+  var actualData = weeks.map(function(w){ return Math.round((w/10)*100); });  
+  readinessChart.data.datasets[0].data = actualData;  
+  readinessChart.update();  
 }
 
-// Draw the chart
-initChart();
-function updateMaster(){
-  var lc=parseInt(document.getElementById('lc-solved').value)||0;
-  var apt=parseInt(document.getElementById('apt-acc').value)||0;
-  var proj=parseInt(document.getElementById('proj-pct').value)||0;
-  var eng=parseInt(document.getElementById('eng-conf').value)||0;
-  var hr=parseInt(document.getElementById('hr-mocks').value)||0;
+initChart();  
+
+function updateMaster(){  
+  var lc=parseInt(document.getElementById('lc-solved').value)||0;  
+  var apt=parseInt(document.getElementById('apt-acc').value)||0;  
+  var proj=parseInt(document.getElementById('proj-pct').value)||0;  
+  var eng=parseInt(document.getElementById('eng-conf').value)||0;  
+  var hr=parseInt(document.getElementById('hr-mocks').value)||0;  
   var cons=parseInt(document.getElementById('consist').value)||0;
 
-  document.getElementById('lc-display').textContent=lc;
-  document.getElementById('apt-display').textContent=apt+'%';
-  document.getElementById('proj-display').textContent=proj+'%';
-  document.getElementById('eng-display').textContent=eng;
-  document.getElementById('hr-display').textContent=hr;
+  document.getElementById('lc-display').textContent=lc;  
+  document.getElementById('apt-display').textContent=apt+'%';  
+  document.getElementById('proj-display').textContent=proj+'%';  
+  document.getElementById('eng-display').textContent=eng;  
+  document.getElementById('hr-display').textContent=hr;  
   document.getElementById('consist-display').textContent=cons+'%';
 
-  var codingScore=Math.round((lc/150)*100);
-  var aptScore=apt;
-  var commScore=Math.round(((eng/10)*50+(hr/20)*50));
-  var projScore=proj;
+  var codingScore=Math.round((lc/150)*100);  
+  var aptScore=apt;  
+  var commScore=Math.round(((eng/10)*50+(hr/20)*50));  
+  var projScore=proj;  
   var overall=Math.round((codingScore*0.35+aptScore*0.25+commScore*0.2+projScore*0.1+cons*0.1));
 
-  document.getElementById('overall-pct').textContent=overall+'%';
-  document.getElementById('coding-score').textContent=codingScore+'%';
-  document.getElementById('apt-score').textContent=aptScore+'%';
-  document.getElementById('comm-score').textContent=commScore+'%';
-  document.getElementById('readiness-display').textContent=overall+'%';
-  document.getElementById('bar-overall').style.width=overall+'%';
-  document.getElementById('bar-coding').style.width=codingScore+'%';
-  document.getElementById('bar-apt').style.width=aptScore+'%';
-  document.getElementById('bar-comm').style.width=commScore+'%';
+  document.getElementById('overall-pct').textContent=overall+'%';  
+  document.getElementById('coding-score').textContent=codingScore+'%';  
+  document.getElementById('apt-score').textContent=aptScore+'%';  
+  document.getElementById('comm-score').textContent=commScore+'%';  
+  document.getElementById('readiness-display').textContent=overall+'%';  
+  
+  // Update the circular progress stroke dasharray logic
+  let circlePath = document.getElementById('circle-progress');
+  if(circlePath) {
+      let dashArray = overall + ", 100";
+      circlePath.setAttribute("stroke-dasharray", dashArray);
+  }
 
-  var col=overall<30?'var(--color-text-danger)':overall<60?'var(--color-text-warning)':'var(--color-text-success)';
-  document.getElementById('overall-pct').style.color=col;
+  var col=overall<30?'#dc2626':overall<60?'#d97706':'#059669';  
+  document.getElementById('overall-pct').style.color=col;  
   document.getElementById('readiness-display').style.color=col;
 
-  var issues=[];
-  if(lc<30) issues.push('Coding is critical — target 4 LC problems today');
-  if(apt<50) issues.push('Aptitude needs daily timed practice — start with Percentages');
-  if(eng<5) issues.push('Speak English for 30 min today — record yourself');
-  if(hr<5) issues.push('HR mock practice is low — run a mock session now');
-  if(cons<70) issues.push('Consistency is below 70% — this is your biggest risk');
-  if(proj<20 && lc>30) issues.push('Project is behind — allocate 2 hrs today');
+  var issues=[];  
+  if(lc<30) issues.push('Coding is critical — target 4 LC problems today');  
+  if(apt<50) issues.push('Aptitude needs daily timed practice — start with Percentages');  
+  if(eng<5) issues.push('Speak English for 30 min today — record yourself');  
+  if(hr<5) issues.push('HR mock practice is low — run a mock session now');  
+  if(cons<70) issues.push('Consistency is below 70% — this is your biggest risk');  
+  if(proj<20 && lc>30) issues.push('Project is behind — allocate 2 hrs today');  
   if(issues.length===0) issues.push('Strong progress across all areas. Increase difficulty.');
 
-  document.getElementById('status-analysis').innerHTML=issues.map(function(i,idx){
-    return '<div style="padding:3px 0;border-bottom:0.5px solid var(--color-border-tertiary);color:'+(idx===0?'var(--color-text-danger)':'var(--color-text-secondary)')+'"><i class="ti ti-arrow-right" aria-hidden="true" style="font-size:11px;margin-right:4px"></i>'+i+'</div>';
-  }).join('');
-}
-updateMaster();
+  document.getElementById('status-analysis').innerHTML=issues.map(function(i,idx){  
+    return '<div style="padding:6px 0;border-bottom:1px solid #f3f4f6;color:'+(idx===0?'#dc2626':'#6b7280')+'">→ '+i+'</div>';  
+  }).join('');  
+}  
 
-var dailyDefaults=[
-  ['5:45–6:00','English warm-up — self-intro 3x aloud','Communication','P1','15','','','','Easy','5',''],
-  ['6:00–8:00','Coding block 1 — 2 LC problems in C++','Coding','P1','120','','','','Medium','5','Arrays/Strings phase'],
-  ['8:00–9:30','Aptitude — 1 topic + 25 timed Qs','Aptitude','P1','90','','','','Medium','5','Log every mistake'],
-  ['9:45–11:45','Coding block 2 — 2 LC problems','Coding','P1','120','','','','Medium','5','Pattern notes'],
-  ['1:00–3:00','Project / Resume work','Project','P2','120','','','','Medium','4','Day 1–10: resume only'],
-  ['3:00–4:00','Communication drill — record HR answer','Communication','P1','60','','','','Easy','4','Listen back & redo'],
-  ['4:00–5:30','Revision sprint — redo yesterday LC','Coding','P1','90','','','','Medium','5','From memory only'],
-  ['5:30–6:30','Weak area attack','Variable','P2','60','','','','Hard','5',''],
+var dailyDefaults=[  
+  ['5:45–6:00','English warm-up — self-intro 3x aloud','Communication','P1','15','','','','Easy','5',''],  
+  ['6:00–8:00','Coding block 1 — 2 LC problems in C++','Coding','P1','120','','','','Medium','5','Arrays/Strings phase'],  
+  ['8:00–9:30','Aptitude — 1 topic + 25 timed Qs','Aptitude','P1','90','','','','Medium','5','Log every mistake'],  
+  ['9:45–11:45','Coding block 2 — 2 LC problems','Coding','P1','120','','','','Medium','5','Pattern notes'],  
+  ['1:00–3:00','Project / Resume work','Project','P2','120','','','','Medium','4','Day 1–10: resume only'],  
+  ['3:00–4:00','Communication drill — record HR answer','Communication','P1','60','','','','Easy','4','Listen back & redo'],  
+  ['4:00–5:30','Revision sprint — redo yesterday LC','Coding','P1','90','','','','Medium','5','From memory only'],  
+  ['5:30–6:30','Weak area attack','Variable','P2','60','','','','Hard','5',''],  
 ];
 
-function makeChk(done){
-  var d=document.createElement('div');
-  d.className='chk'+(done?' on':'');
-  if(done) d.innerHTML='<i class="ti ti-check" style="font-size:10px;color:var(--color-background-primary)" aria-hidden="true"></i>';
-  d.onclick=function(){
-    this.classList.toggle('on');
-    if(this.classList.contains('on')) this.innerHTML='<i class="ti ti-check" style="font-size:10px;color:var(--color-background-primary)" aria-hidden="true"></i>';
-    else this.innerHTML='';
-    updateDailyPct();
-  };
-  return d;
+function makeChk(done){  
+  var d=document.createElement('div');  
+  d.className='chk'+(done?' on':'');  
+  if(done) d.innerHTML='✓';  
+  d.onclick=function(){  
+    this.classList.toggle('on');  
+    if(this.classList.contains('on')) this.innerHTML='✓';  
+    else this.innerHTML='';  
+    updateDailyPct();  
+  };  
+  return d;  
 }
 
-function makeStars(val,max){
-  var wrap=document.createElement('div');
-  wrap.className='stars';
-  for(var i=0;i<max;i++){
-    var s=document.createElement('div');
-    s.className='star'+(i<val?' on':'');
-    s.setAttribute('data-idx',i);
-    s.onclick=(function(w,mx){return function(){
-      var idx=parseInt(this.getAttribute('data-idx'));
-      w.querySelectorAll('.star').forEach(function(st,j){st.classList.toggle('on',j<=idx)});
-    }})(wrap,max);
-    wrap.appendChild(s);
-  }
-  return wrap;
+function makeStars(val,max){  
+  var wrap=document.createElement('div');  
+  wrap.className='stars';  
+  for(var i=0;i<max;i++){  
+    var s=document.createElement('div');  
+    s.className='star'+(i<val?' on':'');  
+    s.setAttribute('data-idx',i);  
+    s.onclick=(function(w,mx){return function(){  
+      var idx=parseInt(this.getAttribute('data-idx'));  
+      w.querySelectorAll('.star').forEach(function(st,j){st.classList.toggle('on',j<=idx)});  
+    }})(wrap,max);  
+    wrap.appendChild(s);  
+  }  
+  return wrap;  
 }
 
-function addDailyRow(vals){
-  vals=vals||['','','Coding','P1','','','','','Medium','3',''];
-  var tbody=document.getElementById('daily-body');
-  var tr=document.createElement('tr');
-  var fields=[vals[0],vals[1],null,null,vals[4],vals[5],null,null,null,vals[9],vals[10],null];
-  var html='';
-  html+='<td><input class="inp" value="'+vals[0]+'" placeholder="6:00–8:00"></td>';
-  html+='<td><input class="inp" value="'+vals[1]+'" placeholder="Task description"></td>';
-  var cats=['Coding','Aptitude','Communication','Project','Resume','Break'];
-  html+='<td><select class="inp" style="font-size:11px"><option>Coding</option><option>Aptitude</option><option>Communication</option><option>Project</option><option>Resume</option><option>Break</option></select></td>';
-  var pris=['P1','P2','P3','P4'];
-  html+='<td><select class="inp" style="font-size:11px"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td>';
-  html+='<td><input class="inp" type="number" value="'+vals[4]+'" placeholder="60" min="0"></td>';
-  html+='<td><input class="inp" type="number" placeholder="—" min="0"></td>';
-  tr.innerHTML=html;
-  var chkTd=document.createElement('td');chkTd.appendChild(makeChk(false));tr.appendChild(chkTd);
-  var focusTd=document.createElement('td');focusTd.appendChild(makeStars(0,5));tr.appendChild(focusTd);
-  var diffs=['Easy','Medium','Hard'];
-  var diffTd=document.createElement('td');
-  var diffSel=document.createElement('select');diffSel.className='inp';diffSel.style.fontSize='11px';
-  diffs.forEach(function(d){var o=document.createElement('option');o.textContent=d;diffSel.appendChild(o);});
-  diffSel.value=vals[8]||'Medium';diffTd.appendChild(diffSel);tr.appendChild(diffTd);
-  var roiTd=document.createElement('td');roiTd.appendChild(makeStars(parseInt(vals[9])||3,5));tr.appendChild(roiTd);
-  var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[10]||'')+'" placeholder="Notes">';tr.appendChild(notesTd);
-  var delTd=document.createElement('td');var delBtn=document.createElement('button');delBtn.className='del-btn';delBtn.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';delBtn.onclick=function(){tr.remove();updateDailyPct();};delTd.appendChild(delBtn);tr.appendChild(delTd);
-  var priSel=tr.querySelectorAll('select')[1];
-  priSel.value=vals[3]||'P1';
-  var catSel=tr.querySelectorAll('select')[0];
-  catSel.value=vals[2]||'Coding';
-  tbody.appendChild(tr);
-  updateDailyPct();
+function addDailyRow(vals){  
+  vals=vals||['','','Coding','P1','','','','','Medium','3',''];  
+  var tbody=document.getElementById('daily-body');  
+  var tr=document.createElement('tr');  
+  var fields=[vals[0],vals[1],null,null,vals[4],vals[5],null,null,null,vals[9],vals[10],null];  
+  var html='';  
+  html+='<td><input class="inp" value="'+vals[0]+'" placeholder="6:00–8:00"></td>';  
+  html+='<td><input class="inp" value="'+vals[1]+'" placeholder="Task description"></td>';  
+  var cats=['Coding','Aptitude','Communication','Project','Resume','Break'];  
+  html+='<td><select class="inp" style="font-size:11px"><option>Coding</option><option>Aptitude</option><option>Communication</option><option>Project</option><option>Resume</option><option>Break</option></select></td>';  
+  var pris=['P1','P2','P3','P4'];  
+  html+='<td><select class="inp" style="font-size:11px"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td>';  
+  html+='<td><input class="inp" type="number" value="'+vals[4]+'" placeholder="60" min="0"></td>';  
+  html+='<td><input class="inp" type="number" placeholder="—" min="0"></td>';  
+  tr.innerHTML=html;  
+  var chkTd=document.createElement('td');chkTd.appendChild(makeChk(false));tr.appendChild(chkTd);  
+  var focusTd=document.createElement('td');focusTd.appendChild(makeStars(0,5));tr.appendChild(focusTd);  
+  var diffs=['Easy','Medium','Hard'];  
+  var diffTd=document.createElement('td');  
+  var diffSel=document.createElement('select');diffSel.className='inp';diffSel.style.fontSize='11px';  
+  diffs.forEach(function(d){var o=document.createElement('option');o.textContent=d;diffSel.appendChild(o);});  
+  diffSel.value=vals[8]||'Medium';diffTd.appendChild(diffSel);tr.appendChild(diffTd);  
+  var roiTd=document.createElement('td');roiTd.appendChild(makeStars(parseInt(vals[9])||3,5));tr.appendChild(roiTd);  
+  var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[10]||'')+'" placeholder="Notes">';tr.appendChild(notesTd);  
+  var delTd=document.createElement('td');var delBtn=document.createElement('button');delBtn.className='del-btn';delBtn.innerHTML='X';delBtn.onclick=function(){tr.remove();updateDailyPct();};delTd.appendChild(delBtn);tr.appendChild(delTd);  
+  var priSel=tr.querySelectorAll('select')[1];  
+  priSel.value=vals[3]||'P1';  
+  var catSel=tr.querySelectorAll('select')[0];  
+  catSel.value=vals[2]||'Coding';  
+  tbody.appendChild(tr);  
+  updateDailyPct();  
 }
 
 dailyDefaults.forEach(function(r){addDailyRow(r)});
 
-function updateDailyPct(){
-  var all=document.querySelectorAll('#daily-body .chk');
-  var done=document.querySelectorAll('#daily-body .chk.on');
-  var pct=all.length?Math.round(done.length/all.length*100):0;
-  document.getElementById('daily-pct').textContent=pct+'%';
-  document.getElementById('daily-pct').style.color=pct>=85?'var(--color-text-success)':pct>=50?'var(--color-text-warning)':'var(--color-text-danger)';
+function updateDailyPct(){  
+  var all=document.querySelectorAll('#daily-body .chk');  
+  var done=document.querySelectorAll('#daily-body .chk.on');  
+  var pct=all.length?Math.round(done.length/all.length*100):0;  
+  document.getElementById('daily-pct').textContent=pct+'%';  
+  document.getElementById('daily-pct').style.color=pct>=85?'var(--color-text-success)':pct>=50?'var(--color-text-warning)':'var(--color-text-danger)';  
 }
 
-var codingDefaults=[
-  ['Two Sum','Arrays','Easy','12','true','95','1',''],
-  ['Valid Anagram','Strings','Easy','18','true','90','1','Forgot to sort'],
-];
-function addCodingRow(vals){
-  vals=vals||['','','Easy','','false','','0',''];
-  var tbody=document.getElementById('coding-body');
-  var rows=tbody.querySelectorAll('tr').length+1;
-  var tr=document.createElement('tr');
-  tr.innerHTML='<td style="color:var(--color-text-secondary);font-size:11px">'+rows+'</td>'+
-    '<td><input class="inp" value="'+vals[0]+'" placeholder="Problem name"></td>'+
-    '<td><select class="inp" style="font-size:11px"><option>Arrays</option><option>Strings</option><option>HashMap</option><option>Two Pointers</option><option>Sliding Window</option><option>Binary Search</option><option>Recursion</option><option>Stack/Queue</option><option>Linked List</option><option>Trees</option><option>DP</option><option>Greedy</option><option>Heaps</option></select></td>'+
-    '<td><select class="inp" style="font-size:11px"><option>Easy</option><option>Medium</option><option>Hard</option></select></td>'+
-    '<td><input class="inp" type="number" value="'+vals[3]+'" placeholder="—" min="0"></td>';
-  var chkTd=document.createElement('td');chkTd.appendChild(makeChk(vals[4]==='true'));tr.appendChild(document.createElement('td'));
-  tr.innerHTML=tr.innerHTML;
-  var chkTd2=document.createElement('td');chkTd2.appendChild(makeChk(vals[4]==='true'));tr.appendChild(chkTd2);
-  tr.innerHTML=tr.innerHTML.replace('<td></td>','');
-  ['<td><input class="inp" type="number" value="'+vals[5]+'" placeholder="%" min="0" max="100"></td>',
-   '<td><input class="inp" type="number" value="'+vals[6]+'" placeholder="0" min="0"></td>',
-   '<td><input class="inp" value="'+(vals[7]||'')+'" placeholder="pattern issue"></td>'].forEach(function(h){tr.innerHTML+=h});
-  var delTd=document.createElement('td');var delBtn=document.createElement('button');delBtn.className='del-btn';delBtn.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';delBtn.onclick=function(){tr.remove();updateCodingMetrics();};delTd.appendChild(delBtn);
-  var fullTr=document.createElement('tr');
-  fullTr.innerHTML='<td style="color:var(--color-text-secondary);font-size:11px">'+rows+'</td>'+
-    '<td><input class="inp" value="'+vals[0]+'" placeholder="Problem name"></td>'+
-    '<td><select class="inp" style="font-size:11px"><option>Arrays</option><option>Strings</option><option>HashMap</option><option>Two Pointers</option><option>Sliding Window</option><option>Binary Search</option><option>Recursion</option><option>Stack/Queue</option><option>Linked List</option><option>Trees</option><option>DP</option><option>Greedy</option><option>Heaps</option></select></td>'+
-    '<td><select class="inp" style="font-size:11px"><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select></td>'+
-    '<td><input class="inp" type="number" value="'+vals[3]+'" placeholder="—" min="0"></td>';
-  var chkCell=document.createElement('td');chkCell.appendChild(makeChk(vals[4]==='true'));
-  fullTr.appendChild(document.createElement('td'));
-  var parsedTr=document.createElement('tbody');parsedTr.innerHTML=fullTr.outerHTML;var realTr=parsedTr.firstChild;
-  realTr.children[4].replaceWith(chkCell);
-  realTr.innerHTML+=
-    '<td><input class="inp" type="number" value="'+vals[5]+'" placeholder="%" min="0" max="100"></td>'+
-    '<td><input class="inp" type="number" value="'+vals[6]+'" placeholder="0" min="0"></td>'+
-    '<td><input class="inp" value="'+(vals[7]||'')+'" placeholder="weak pattern"></td>';
-  var dTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';dBtn.onclick=function(){realTr.remove();updateCodingMetrics();};dTd.appendChild(dBtn);realTr.appendChild(dTd);
-  var topicSel=realTr.querySelector('select');topicSel.value=vals[2]||'Arrays';
-  var diffSel=realTr.querySelectorAll('select')[1];diffSel.value=vals[3]||'Easy';
-  tbody.appendChild(realTr);
-  updateCodingMetrics();
-}
+var codingDefaults=[  
+  ['Two Sum','Arrays','Easy','12','true','95','1',''],  
+  ['Valid Anagram','Strings','Easy','18','true','90','1','Forgot to sort'],  
+];  
+function addCodingRow(vals){  
+  vals=vals||['','','Easy','','false','','0',''];  
+  var tbody=document.getElementById('coding-body');  
+  var rows=tbody.querySelectorAll('tr').length+1;  
+  var tr=document.createElement('tr');  
+  var fullTr=document.createElement('tr');  
+  fullTr.innerHTML='<td style="color:var(--color-text-secondary);font-size:11px">'+rows+'</td>'+  
+    '<td><input class="inp" value="'+vals[0]+'" placeholder="Problem name"></td>'+  
+    '<td><select class="inp" style="font-size:11px"><option>Arrays</option><option>Strings</option><option>HashMap</option><option>Two Pointers</option><option>Sliding Window</option><option>Binary Search</option><option>Recursion</option><option>Stack/Queue</option><option>Linked List</option><option>Trees</option><option>DP</option><option>Greedy</option><option>Heaps</option></select></td>'+  
+    '<td><select class="inp" style="font-size:11px"><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select></td>'+  
+    '<td><input class="inp" type="number" value="'+vals[3]+'" placeholder="—" min="0"></td>';  
+  var chkCell=document.createElement('td');chkCell.appendChild(makeChk(vals[4]==='true'));  
+  fullTr.appendChild(chkCell); 
+  fullTr.innerHTML+=  
+    '<td><input class="inp" type="number" value="'+vals[5]+'" placeholder="%" min="0" max="100"></td>'+  
+    '<td><input class="inp" type="number" value="'+vals[6]+'" placeholder="0" min="0"></td>'+  
+    '<td><input class="inp" value="'+(vals[7]||'')+'" placeholder="weak pattern"></td>';  
+  var dTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){fullTr.remove();updateCodingMetrics();};dTd.appendChild(dBtn);fullTr.appendChild(dTd);  
+  var parsedTr=document.createElement('tbody');parsedTr.innerHTML=fullTr.outerHTML;var realTr=parsedTr.firstChild;  
+  realTr.children[5].replaceWith(chkCell); // Re-attach functional checkbox
+  var topicSel=realTr.querySelector('select');topicSel.value=vals[2]||'Arrays';  
+  var diffSel=realTr.querySelectorAll('select')[1];diffSel.value=vals[3]||'Easy';  
+  tbody.appendChild(realTr);  
+  updateCodingMetrics();  
+}  
 codingDefaults.forEach(function(r){addCodingRow(r)});
 
-function updateCodingMetrics(){
-  var rows=document.querySelectorAll('#coding-body tr');
-  var total=rows.length;
-  var solved=0,accSum=0,accCnt=0;
-  rows.forEach(function(r){
-    var chk=r.querySelector('.chk');
-    if(chk&&chk.classList.contains('on')){solved++;var inp=r.querySelectorAll('input[type="number"]');if(inp[1]&&inp[1].value){accSum+=parseInt(inp[1].value)||0;accCnt++;}}
-  });
-  document.getElementById('c-total').textContent=total;
-  document.getElementById('c-bar-total').style.width=Math.round(total/150*100)+'%';
-  document.getElementById('c-acc').textContent=accCnt?Math.round(accSum/accCnt)+'%':'—';
-  document.getElementById('c-bar-acc').style.width=accCnt?Math.round(accSum/accCnt)+'%':'0%';
+function updateCodingMetrics(){  
+  var rows=document.querySelectorAll('#coding-body tr');  
+  var total=rows.length;  
+  var solved=0,accSum=0,accCnt=0;  
+  rows.forEach(function(r){  
+    var chk=r.querySelector('.chk');  
+    if(chk&&chk.classList.contains('on')){solved++;var inp=r.querySelectorAll('input[type="number"]');if(inp[1]&&inp[1].value){accSum+=parseInt(inp[1].value)||0;accCnt++;}}  
+  });  
+  document.getElementById('c-total').textContent=total;  
+  document.getElementById('c-bar-total').style.width=Math.round(total/150*100)+'%';  
+  document.getElementById('c-acc').textContent=accCnt?Math.round(accSum/accCnt)+'%':'—';  
+  document.getElementById('c-bar-acc').style.width=accCnt?Math.round(accSum/accCnt)+'%':'0%';  
 }
 
-var topicData=[
-  {name:'Arrays',target:20,done:0},
-  {name:'Strings',target:15,done:0},
-  {name:'HashMap',target:10,done:0},
-  {name:'Two Pointers',target:10,done:0},
-  {name:'Sliding Window',target:8,done:0},
-  {name:'Binary Search',target:8,done:0},
-  {name:'Stack/Queue',target:10,done:0},
-  {name:'Trees',target:15,done:0},
-  {name:'DP',target:12,done:0},
-  {name:'Greedy',target:8,done:0},
-];
-function buildTopicMastery(){
-  var el=document.getElementById('topic-mastery');
-  el.innerHTML=topicData.map(function(t){
-    var pct=Math.min(100,Math.round(t.done/t.target*100));
-    var col=pct<30?'var(--color-text-danger)':pct<70?'var(--color-text-warning)':'var(--color-text-success)';
-    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:100px;flex-shrink:0">'+t.name+'</span><div class="bar-wrap" style="flex:1;height:8px"><div class="bar" style="width:'+pct+'%;background:'+col+'"></div></div><span style="font-size:11px;font-weight:500;min-width:36px;text-align:right;color:'+col+'">'+t.done+'/'+t.target+'</span><input type="number" min="0" max="'+t.target+'" value="'+t.done+'" style="width:36px;font-size:11px;padding:2px 4px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)" oninput="topicData['+topicData.indexOf(t)+'].done=Math.min(parseInt(this.value)||0,'+t.target+');buildTopicMastery()"></div>';
-  }).join('');
-}
+var topicData=[  
+  {name:'Arrays',target:20,done:0},  
+  {name:'Strings',target:15,done:0},  
+  {name:'HashMap',target:10,done:0},  
+  {name:'Two Pointers',target:10,done:0},  
+  {name:'Sliding Window',target:8,done:0},  
+  {name:'Binary Search',target:8,done:0},  
+  {name:'Stack/Queue',target:10,done:0},  
+  {name:'Trees',target:15,done:0},  
+  {name:'DP',target:12,done:0},  
+  {name:'Greedy',target:8,done:0},  
+];  
+function buildTopicMastery(){  
+  var el=document.getElementById('topic-mastery');  
+  el.innerHTML=topicData.map(function(t){  
+    var pct=Math.min(100,Math.round(t.done/t.target*100));  
+    var col=pct<30?'var(--color-text-danger)':pct<70?'var(--color-text-warning)':'var(--color-text-success)';  
+    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:100px;flex-shrink:0">'+t.name+'</span><div class="bar-wrap" style="flex:1;height:8px"><div class="bar" style="width:'+pct+'%;background:'+col+'"></div></div><span style="font-size:11px;font-weight:500;min-width:36px;text-align:right;color:'+col+'">'+t.done+'/'+t.target+'</span><input type="number" min="0" max="'+t.target+'" value="'+t.done+'" style="width:36px;font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)" oninput="topicData['+topicData.indexOf(t)+'].done=Math.min(parseInt(this.value)||0,'+t.target+');buildTopicMastery()"></div>';  
+  }).join('');  
+}  
 buildTopicMastery();
 
-var projectFeatures=[
-  ['File upload UI','Frontend','In progress','P1','4','',''],
-  ['Gemini API integration','Backend','Not started','P1','6','',''],
-  ['AI scoring logic','Backend','Not started','P1','5','',''],
-  ['Feedback display UI','Frontend','Not started','P2','3','',''],
-  ['Loading states','Frontend','Not started','P3','2','',''],
-  ['Error handling','Backend','Not started','P2','3','',''],
-  ['History feature','Frontend','Not started','P3','4','',''],
-  ['Deploy to Vercel','DevOps','Not started','P1','2','',''],
-  ['README + GitHub cleanup','DevOps','Not started','P2','2','',''],
-];
-function addProjectRow(vals){
-  vals=vals||['','Frontend','Not started','P2','','',''];
-  var tbody=document.getElementById('project-body');
-  var tr=document.createElement('tr');
-  tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="Feature name"></td>'+
-    '<td><select class="inp" style="font-size:11px"><option>Frontend</option><option>Backend</option><option>API</option><option>DevOps</option><option>UI/UX</option></select></td>'+
-    '<td><select class="inp" style="font-size:11px"><option>Not started</option><option>In progress</option><option>Done</option><option>Blocked</option></select></td>'+
-    '<td><select class="inp" style="font-size:11px"><option>P1</option><option>P2</option><option>P3</option></select></td>'+
-    '<td><input class="inp" type="number" value="'+(vals[4]||'')+'" placeholder="hrs" min="0"></td>'+
-    '<td><input class="inp" type="number" placeholder="—" min="0"></td>';
-  var chkTd=document.createElement('td');chkTd.appendChild(makeChk(vals[2]==='Done'));tr.appendChild(chkTd);
-  var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[6]||'')+'" placeholder="Notes">';tr.appendChild(notesTd);
-  var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';dBtn.onclick=function(){tr.remove();updateProjectMetrics();};delTd.appendChild(dBtn);tr.appendChild(delTd);
-  var sels=tr.querySelectorAll('select');
-  sels[0].value=vals[1]||'Frontend';
-  sels[1].value=vals[2]||'Not started';
-  sels[2].value=vals[3]||'P2';
-  tbody.appendChild(tr);
-  updateProjectMetrics();
-}
+var projectFeatures=[  
+  ['File upload UI','Frontend','In progress','P1','4','',''],  
+  ['Gemini API integration','Backend','Not started','P1','6','',''],  
+  ['AI scoring logic','Backend','Not started','P1','5','',''],  
+  ['Feedback display UI','Frontend','Not started','P2','3','',''],  
+];  
+function addProjectRow(vals){  
+  vals=vals||['','Frontend','Not started','P2','','',''];  
+  var tbody=document.getElementById('project-body');  
+  var tr=document.createElement('tr');  
+  tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="Feature name"></td>'+  
+    '<td><select class="inp" style="font-size:11px"><option>Frontend</option><option>Backend</option><option>API</option><option>DevOps</option><option>UI/UX</option></select></td>'+  
+    '<td><select class="inp" style="font-size:11px"><option>Not started</option><option>In progress</option><option>Done</option><option>Blocked</option></select></td>'+  
+    '<td><select class="inp" style="font-size:11px"><option>P1</option><option>P2</option><option>P3</option></select></td>'+  
+    '<td><input class="inp" type="number" value="'+(vals[4]||'')+'" placeholder="hrs" min="0"></td>'+  
+    '<td><input class="inp" type="number" placeholder="—" min="0"></td>';  
+  var chkTd=document.createElement('td');chkTd.appendChild(makeChk(vals[2]==='Done'));tr.appendChild(chkTd);  
+  var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[6]||'')+'" placeholder="Notes">';tr.appendChild(notesTd);  
+  var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){tr.remove();updateProjectMetrics();};delTd.appendChild(dBtn);tr.appendChild(delTd);  
+  var sels=tr.querySelectorAll('select');  
+  sels[0].value=vals[1]||'Frontend';  
+  sels[1].value=vals[2]||'Not started';  
+  sels[2].value=vals[3]||'P2';  
+  tbody.appendChild(tr);  
+  updateProjectMetrics();  
+}  
 projectFeatures.forEach(function(r){addProjectRow(r)});
 
-var projModules={Frontend:0,Backend:0,API:0,DevOps:0};
-function updateProjectMetrics(){
-  var rows=document.querySelectorAll('#project-body tr');
-  var done=0,bugs=0;
-  var mods={Frontend:{done:0,total:0},Backend:{done:0,total:0},API:{done:0,total:0},DevOps:{done:0,total:0}};
-  rows.forEach(function(r){
-    var sels=r.querySelectorAll('select');
-    var mod=sels[0]?sels[0].value:'Frontend';
-    var status=sels[1]?sels[1].value:'Not started';
-    if(mods[mod]) mods[mod].total++;
-    if(status==='Done'){done++;if(mods[mod]) mods[mod].done++;}
-  });
-  document.getElementById('p-features').textContent=done+'/'+rows.length;
-  var el=document.getElementById('proj-modules');
-  el.innerHTML=Object.keys(mods).map(function(m){
-    var d=mods[m];
-    var pct=d.total?Math.round(d.done/d.total*100):0;
-    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:70px;flex-shrink:0">'+m+'</span><div class="bar-wrap" style="flex:1"><div class="bar" style="width:'+pct+'%;background:var(--color-text-info)"></div></div><span style="font-size:11px;font-weight:500;min-width:36px;text-align:right">'+d.done+'/'+d.total+'</span></div>';
-  }).join('');
+function updateProjectMetrics(){  
+  var rows=document.querySelectorAll('#project-body tr');  
+  var done=0,bugs=0;  
+  var mods={Frontend:{done:0,total:0},Backend:{done:0,total:0},API:{done:0,total:0},DevOps:{done:0,total:0}};  
+  rows.forEach(function(r){  
+    var sels=r.querySelectorAll('select');  
+    var mod=sels[0]?sels[0].value:'Frontend';  
+    var status=sels[1]?sels[1].value:'Not started';  
+    if(mods[mod]) mods[mod].total++;  
+    if(status==='Done'){done++;if(mods[mod]) mods[mod].done++;}  
+  });  
+  document.getElementById('p-features').textContent=done+'/'+rows.length;  
+  var el=document.getElementById('proj-modules');  
+  el.innerHTML=Object.keys(mods).map(function(m){  
+    var d=mods[m];  
+    var pct=d.total?Math.round(d.done/d.total*100):0;  
+    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:70px;flex-shrink:0">'+m+'</span><div class="bar-wrap" style="flex:1"><div class="bar" style="width:'+pct+'%;background:var(--color-text-info)"></div></div><span style="font-size:11px;font-weight:500;min-width:36px;text-align:right">'+d.done+'/'+d.total+'</span></div>';  
+  }).join('');  
 }
 
-function updateDeployStatus(){
-  var v=document.getElementById('deploy-select').value;
-  var el=document.getElementById('p-deploy');
-  if(v==='live'){el.textContent='Live';el.style.color='var(--color-text-success)';}
-  else if(v==='staging'){el.textContent='Staging';el.style.color='var(--color-text-warning)';}
-  else if(v==='local'){el.textContent='Local';el.style.color='var(--color-text-info)';}
-  else{el.textContent='No';el.style.color='var(--color-text-danger)';}
+function updateDeployStatus(){  
+  var v=document.getElementById('deploy-select').value;  
+  var el=document.getElementById('p-deploy');  
+  if(v==='live'){el.textContent='Live';el.style.color='var(--color-text-success)';}  
+  else if(v==='staging'){el.textContent='Staging';el.style.color='var(--color-text-warning)';}  
+  else if(v==='local'){el.textContent='Local';el.style.color='var(--color-text-info)';}  
+  else{el.textContent='No';el.style.color='var(--color-text-danger)';}  
 }
 
-function addCommRow(vals){
-  vals=vals||['','HR mock','','30','','',''];
-  var tbody=document.getElementById('comm-body');
-  var tr=document.createElement('tr');
-  tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="DD/MM"></td>'+
-    '<td><select class="inp" style="font-size:11px"><option>HR mock</option><option>Self-intro</option><option>Project explain</option><option>Tech explain</option><option>Speaking drill</option></select></td>'+
-    '<td><input class="inp" value="'+(vals[2]||'')+'" placeholder="Questions covered"></td>'+
-    '<td><input class="inp" type="number" value="'+(vals[3]||'')+'" placeholder="min"></td>';
-  var confTd=document.createElement('td');confTd.appendChild(makeStars(parseInt(vals[4])||0,5));tr.appendChild(confTd);
-  var fluTd=document.createElement('td');fluTd.appendChild(makeStars(parseInt(vals[5])||0,5));tr.appendChild(fluTd);
-  tr.innerHTML+='\n';
-  var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[6]||'')+'" placeholder="What improved?">';tr.appendChild(notesTd);
-  var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';dBtn.onclick=function(){tr.remove();};delTd.appendChild(dBtn);tr.appendChild(delTd);
-  var sel=tr.querySelector('select');if(sel) sel.value=vals[1]||'HR mock';
-  tbody.appendChild(tr);
-  document.getElementById('cm-mocks').textContent=tbody.querySelectorAll('tr').length;
+function addCommRow(vals){  
+  vals=vals||['','HR mock','','30','','',''];  
+  var tbody=document.getElementById('comm-body');  
+  var tr=document.createElement('tr');  
+  tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="DD/MM"></td>'+  
+    '<td><select class="inp" style="font-size:11px"><option>HR mock</option><option>Self-intro</option><option>Project explain</option><option>Tech explain</option><option>Speaking drill</option></select></td>'+  
+    '<td><input class="inp" value="'+(vals[2]||'')+'" placeholder="Questions covered"></td>'+  
+    '<td><input class="inp" type="number" value="'+(vals[3]||'')+'" placeholder="min"></td>';  
+  var confTd=document.createElement('td');confTd.appendChild(makeStars(parseInt(vals[4])||0,5));tr.appendChild(confTd);  
+  var fluTd=document.createElement('td');fluTd.appendChild(makeStars(parseInt(vals[5])||0,5));tr.appendChild(fluTd);  
+  var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[6]||'')+'" placeholder="What improved?">';tr.appendChild(notesTd);  
+  var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){tr.remove();};delTd.appendChild(dBtn);tr.appendChild(delTd);  
+  var sel=tr.querySelector('select');if(sel) sel.value=vals[1]||'HR mock';  
+  tbody.appendChild(tr);  
+  document.getElementById('cm-mocks').textContent=tbody.querySelectorAll('tr').length;  
 }
 
-var hrQuestions=['Tell me about yourself','Why should we hire you?','Your biggest strength?','Your biggest weakness?','Explain your project','Where do you see yourself in 5 years?','Tell me about a challenge','Why this company?','Are you a team player?','Do you have questions for us?'];
-function buildHRMastery(){
-  var el=document.getElementById('hr-mastery');
-  el.innerHTML=hrQuestions.map(function(q,i){
-    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span style="font-size:12px;flex:1">'+q+'</span>'+makeStarsHTML(0,5,'hr-q-'+i)+'<span class="badge b-n" style="font-size:10px" id="hr-status-'+i+'">Untouched</span></div>';
-  }).join('');
-}
-function makeStarsHTML(val,max,id){
-  var h='<div class="stars" id="'+id+'">';
-  for(var i=0;i<max;i++) h+='<div class="star'+(i<val?' on':'')+'" data-idx="'+i+'" onclick="setHRStar(\''+id+'\','+i+')"></div>';
-  return h+'</div>';
-}
-function setHRStar(id,idx){
-  var wrap=document.getElementById(id);
-  if(!wrap) return;
-  wrap.querySelectorAll('.star').forEach(function(s,j){s.classList.toggle('on',j<=idx)});
-  var num=id.replace('hr-q-','');
-  var statusEl=document.getElementById('hr-status-'+num);
-  if(statusEl){
-    if(idx<2) statusEl.textContent='Practising';
-    else if(idx<4) statusEl.textContent='Getting there';
-    else{statusEl.textContent='Mastered';statusEl.className='badge b-g';}
-  }
-}
+var hrQuestions=['Tell me about yourself','Why should we hire you?','Your biggest strength?','Your biggest weakness?','Explain your project'];  
+function buildHRMastery(){  
+  var el=document.getElementById('hr-mastery');  
+  el.innerHTML=hrQuestions.map(function(q,i){  
+    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--color-border-tertiary)"><span style="font-size:12px;flex:1">'+q+'</span>'+makeStarsHTML(0,5,'hr-q-'+i)+'<span class="badge b-n" style="font-size:10px" id="hr-status-'+i+'">Untouched</span></div>';  
+  }).join('');  
+}  
+function makeStarsHTML(val,max,id){  
+  var h='<div class="stars" id="'+id+'">';  
+  for(var i=0;i<max;i++) h+='<div class="star'+(i<val?' on':'')+'" data-idx="'+i+'" onclick="setHRStar(\''+id+'\','+i+')"></div>';  
+  return h+'</div>';  
+}  
+function setHRStar(id,idx){  
+  var wrap=document.getElementById(id);  
+  if(!wrap) return;  
+  wrap.querySelectorAll('.star').forEach(function(s,j){s.classList.toggle('on',j<=idx)});  
+  var num=id.replace('hr-q-','');  
+  var statusEl=document.getElementById('hr-status-'+num);  
+  if(statusEl){  
+    if(idx<2) statusEl.textContent='Practising';  
+    else if(idx<4) statusEl.textContent='Getting there';  
+    else{statusEl.textContent='Mastered';statusEl.className='badge b-g';}  
+  }  
+}  
 buildHRMastery();
 
-function addAptRow(vals){
-  vals=vals||['','','','','','',''];
-  var tbody=document.getElementById('apt-body');
-  var tr=document.createElement('tr');
-  tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="DD/MM"></td>'+
-    '<td><input class="inp" value="'+(vals[1]||'')+'" placeholder="Topics"></td>'+
-    '<td><input class="inp" type="number" value="'+(vals[2]||'')+'" placeholder="%" min="0" max="100"></td>'+
-    '<td><input class="inp" value="'+(vals[3]||'')+'" placeholder="min"></td>'+
-    '<td><input class="inp" type="number" value="'+(vals[4]||'')+'" placeholder="sec" min="0"></td>'+
-    '<td><input class="inp" value="'+(vals[5]||'')+'" placeholder="weak topics"></td>'+
-    '<td><input class="inp" value="'+(vals[6]||'')+'" placeholder="mistakes"></td>';
-  var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';dBtn.onclick=function(){tr.remove();updateAptMetrics();};delTd.appendChild(dBtn);tr.appendChild(delTd);
-  tbody.appendChild(tr);
-  updateAptMetrics();
+function addAptRow(vals){  
+  vals=vals||['','','','','','',''];  
+  var tbody=document.getElementById('apt-body');  
+  var tr=document.createElement('tr');  
+  tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="DD/MM"></td>'+  
+    '<td><input class="inp" value="'+(vals[1]||'')+'" placeholder="Topics"></td>'+  
+    '<td><input class="inp" type="number" value="'+(vals[2]||'')+'" placeholder="%" min="0" max="100"></td>'+  
+    '<td><input class="inp" value="'+(vals[3]||'')+'" placeholder="min"></td>'+  
+    '<td><input class="inp" type="number" value="'+(vals[4]||'')+'" placeholder="sec" min="0"></td>'+  
+    '<td><input class="inp" value="'+(vals[5]||'')+'" placeholder="weak topics"></td>'+  
+    '<td><input class="inp" value="'+(vals[6]||'')+'" placeholder="mistakes"></td>';  
+  var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){tr.remove();updateAptMetrics();};delTd.appendChild(dBtn);tr.appendChild(delTd);  
+  tbody.appendChild(tr);  
+  updateAptMetrics();  
 }
 
-function updateAptMetrics(){
-  var rows=document.querySelectorAll('#apt-body tr');
-  document.getElementById('ap-mocks').textContent=rows.length;
-  var scores=[],speeds=[],weaks={};
-  rows.forEach(function(r){
-    var inps=r.querySelectorAll('input');
-    if(inps[2]&&inps[2].value) scores.push(parseInt(inps[2].value)||0);
-    if(inps[4]&&inps[4].value) speeds.push(parseInt(inps[4].value)||0);
-    if(inps[5]&&inps[5].value){var w=inps[5].value.trim();if(w) weaks[w]=(weaks[w]||0)+1;}
-  });
-  var avgAcc=scores.length?Math.round(scores.reduce(function(a,b){return a+b},0)/scores.length):0;
-  var avgSpeed=speeds.length?Math.round(speeds.reduce(function(a,b){return a+b},0)/speeds.length):0;
-  document.getElementById('ap-acc').textContent=scores.length?avgAcc+'%':'0%';
-  document.getElementById('ap-bar').style.width=(scores.length?avgAcc:0)+'%';
-  document.getElementById('ap-speed').textContent=speeds.length?avgSpeed+'s':'—';
-  var topWeak=Object.keys(weaks).sort(function(a,b){return weaks[b]-weaks[a]})[0];
-  document.getElementById('ap-weak').textContent=topWeak||'—';
+function updateAptMetrics(){  
+  var rows=document.querySelectorAll('#apt-body tr');  
+  document.getElementById('ap-mocks').textContent=rows.length;  
+  var scores=[],speeds=[],weaks={};  
+  rows.forEach(function(r){  
+    var inps=r.querySelectorAll('input');  
+    if(inps[2]&&inps[2].value) scores.push(parseInt(inps[2].value)||0);  
+    if(inps[4]&&inps[4].value) speeds.push(parseInt(inps[4].value)||0);  
+    if(inps[5]&&inps[5].value){var w=inps[5].value.trim();if(w) weaks[w]=(weaks[w]||0)+1;}  
+  });  
+  var avgAcc=scores.length?Math.round(scores.reduce(function(a,b){return a+b},0)/scores.length):0;  
+  var avgSpeed=speeds.length?Math.round(speeds.reduce(function(a,b){return a+b},0)/speeds.length):0;  
+  document.getElementById('ap-acc').textContent=scores.length?avgAcc+'%':'0%';  
+  document.getElementById('ap-bar').style.width=(scores.length?avgAcc:0)+'%';  
+  document.getElementById('ap-speed').textContent=speeds.length?avgSpeed+'s':'—';  
+  var topWeak=Object.keys(weaks).sort(function(a,b){return weaks[b]-weaks[a]})[0];  
+  document.getElementById('ap-weak').textContent=topWeak||'—';  
 }
 
-var aptTopics=[
-  {name:'Percentages',target:5,done:0},
-  {name:'Ratio & Proportion',target:4,done:0},
-  {name:'Time & Work',target:4,done:0},
-  {name:'Speed & Distance',target:4,done:0},
-  {name:'Profit & Loss',target:3,done:0},
-  {name:'Number Systems',target:3,done:0},
-  {name:'P & C',target:3,done:0},
-  {name:'Probability',target:3,done:0},
-  {name:'Logical Reasoning',target:4,done:0},
-  {name:'Data Interpretation',target:3,done:0},
-];
-function buildAptTopics(){
-  var el=document.getElementById('apt-topics');
-  el.innerHTML=aptTopics.map(function(t,i){
-    var pct=Math.min(100,Math.round(t.done/t.target*100));
-    var col=pct<30?'var(--color-text-danger)':pct<70?'var(--color-text-warning)':'var(--color-text-success)';
-    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:130px;flex-shrink:0">'+t.name+'</span><div class="bar-wrap" style="flex:1;height:7px"><div class="bar" style="width:'+pct+'%;background:'+col+'"></div></div><span style="font-size:11px;font-weight:500;min-width:40px;text-align:right;color:'+col+'">'+t.done+'/'+t.target+' mocks</span><input type="number" min="0" max="'+t.target+'" value="'+t.done+'" style="width:32px;font-size:11px;padding:2px 4px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)" oninput="aptTopics['+i+'].done=Math.min(parseInt(this.value)||0,'+t.target+');buildAptTopics()"></div>';
-  }).join('');
-}
+var aptTopics=[  
+  {name:'Percentages',target:5,done:0},  
+  {name:'Ratio & Prop.',target:4,done:0},  
+  {name:'Time & Work',target:4,done:0},  
+  {name:'Speed & Dist.',target:4,done:0},  
+];  
+function buildAptTopics(){  
+  var el=document.getElementById('apt-topics');  
+  el.innerHTML=aptTopics.map(function(t,i){  
+    var pct=Math.min(100,Math.round(t.done/t.target*100));  
+    var col=pct<30?'var(--color-text-danger)':pct<70?'var(--color-text-warning)':'var(--color-text-success)';  
+    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:130px;flex-shrink:0">'+t.name+'</span><div class="bar-wrap" style="flex:1;height:7px"><div class="bar" style="width:'+pct+'%;background:'+col+'"></div></div><span style="font-size:11px;font-weight:500;min-width:40px;text-align:right;color:'+col+'">'+t.done+'/'+t.target+'</span><input type="number" min="0" max="'+t.target+'" value="'+t.done+'" style="width:32px;font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)" oninput="aptTopics['+i+'].done=Math.min(parseInt(this.value)||0,'+t.target+');buildAptTopics()"></div>';  
+  }).join('');  
+}  
 buildAptTopics();
 
-var weekTargets={1:{lc:30,apt:45,hr:2,cons:70},2:{lc:60,apt:55,hr:7,cons:75},3:{lc:100,apt:70,hr:14,cons:80},4:{lc:150,apt:80,hr:20,cons:85}};
-function loadWeek(){
-  var w=document.getElementById('week-select').value;
-  var t=weekTargets[w];
-  document.getElementById('w-lc').textContent=t.lc+' target';
-  document.getElementById('w-apt').textContent=t.apt+'% target';
-  document.getElementById('w-hr').textContent=t.hr+' mocks';
-  document.getElementById('w-cons').textContent=t.cons+'% consistency';
-}
+var weekTargets={1:{lc:30,apt:45,hr:2,cons:70},2:{lc:60,apt:55,hr:7,cons:75},3:{lc:100,apt:70,hr:14,cons:80},4:{lc:150,apt:80,hr:20,cons:85}};  
+function loadWeek(){  
+  var w=document.getElementById('week-select').value;  
+  var t=weekTargets[w];  
+  document.getElementById('w-lc').textContent=t.lc+' target';  
+  document.getElementById('w-apt').textContent=t.apt+'% target';  
+  document.getElementById('w-hr').textContent=t.hr+' mocks';  
+  document.getElementById('w-cons').textContent=t.cons+'% consistency';  
+}  
 loadWeek();
 
-function genHash(){
-  var lc=document.getElementById('h-lc').value||'0';
-  var apt=document.getElementById('h-apt').value||'0';
-  var hr=document.getElementById('h-hr').value||'0';
-  var cons=document.getElementById('h-cons').value||'0';
-  var proj=document.getElementById('h-proj').value||'0';
-  var weak=document.getElementById('h-weak').value||'unknown';
-  var wk=document.getElementById('week-select').value||'1';
-  var hash='EPTOS::W'+wk+'::LC='+lc+'/150::APT='+apt+'%::PROJ='+proj+'%::HR='+hr+'/20::CONS='+cons+'%::WEAK=['+weak+']::LANG=C++::NEXT=W'+(parseInt(wk)+1);
-  var el=document.getElementById('hash-out');
-  el.textContent=hash;
-  el.style.display='block';
-  navigator.clipboard.writeText(hash).catch(function(){});
-  sendPrompt('Here is my EPTOS week hash: '+hash+' — analyze my progress and adjust my plan for next week');
+// ---------------- LOCAL STORAGE LOGIC ----------------
+
+function saveAllData() {  
+    saveInputs(); saveDailyTable(); saveCodingTable(); saveProjectTable(); saveState();  
 }
 
-// --- AUTO-SAVE DATA TO BROWSER LOCAL STORAGE ---
-
-// 1. Save data right before the page refreshes or closes
-/* =========================================================
-   EPTOS ELITE SAVE SYSTEM
-   Proper structured localStorage architecture
-   ========================================================= */
-
-
-/* =========================
-   MAIN SAVE FUNCTION
-   ========================= */
-
-function saveAllData() {
-    saveInputs();
-    saveDailyTable();
-    saveCodingTable();
-    saveProjectTable();
-    saveState();
-
-    console.log("EPTOS data saved");
+function saveInputs() {  
+    var data = {};  
+    document.querySelectorAll('input, select, textarea').forEach(function(el, index) {  
+        var key = el.id || ("input_" + index);  
+        if (el.type === "checkbox") { data[key] = el.checked; } else { data[key] = el.value; }  
+    });  
+    localStorage.setItem("eptos_inputs", JSON.stringify(data));  
 }
 
-
-/* =========================
-   SAVE BASIC INPUTS
-   ========================= */
-
-function saveInputs() {
-    var data = {};
-
-    document.querySelectorAll('input, select, textarea').forEach(function(el, index) {
-
-        var key = el.id || ("input_" + index);
-
-        if (el.type === "checkbox") {
-            data[key] = el.checked;
-        }
-        else {
-            data[key] = el.value;
-        }
-    });
-
-    localStorage.setItem(
-        "eptos_inputs",
-        JSON.stringify(data)
-    );
+function loadInputs() {  
+    var saved = JSON.parse(localStorage.getItem("eptos_inputs"));  
+    if (!saved) return;  
+    document.querySelectorAll('input, select, textarea').forEach(function(el, index) {  
+        var key = el.id || ("input_" + index);  
+        if (saved[key] === undefined) return;  
+        if (el.type === "checkbox") { el.checked = saved[key]; } else { el.value = saved[key]; }  
+    });  
 }
 
-
-/* =========================
-   LOAD BASIC INPUTS
-   ========================= */
-
-function loadInputs() {
-
-    var saved = JSON.parse(
-        localStorage.getItem("eptos_inputs")
-    );
-
-    if (!saved) return;
-
-    document.querySelectorAll('input, select, textarea')
-        .forEach(function(el, index) {
-
-            var key = el.id || ("input_" + index);
-
-            if (saved[key] === undefined) return;
-
-            if (el.type === "checkbox") {
-                el.checked = saved[key];
-            }
-            else {
-                el.value = saved[key];
-            }
-        });
+function saveDailyTable() {  
+    var rows = [];  
+    document.querySelectorAll('#daily-body tr').forEach(function(row) {  
+        var inputs = row.querySelectorAll('input, select');  
+        rows.push({ time: inputs[0]?.value || "", task: inputs[1]?.value || "", category: inputs[2]?.value || "", priority: inputs[3]?.value || "", estimated: inputs[4]?.value || "", actual: inputs[5]?.value || "", notes: inputs[6]?.value || "" });  
+    });  
+    localStorage.setItem("eptos_daily_rows", JSON.stringify(rows));  
 }
 
-
-/* =========================
-   SAVE DAILY TABLE
-   ========================= */
-
-function saveDailyTable() {
-
-    var rows = [];
-
-    document.querySelectorAll('#daily-body tr')
-        .forEach(function(row) {
-
-            var inputs = row.querySelectorAll('input, select');
-
-            rows.push({
-                time: inputs[0]?.value || "",
-                task: inputs[1]?.value || "",
-                category: inputs[2]?.value || "",
-                priority: inputs[3]?.value || "",
-                estimated: inputs[4]?.value || "",
-                actual: inputs[5]?.value || "",
-                notes: inputs[6]?.value || ""
-            });
-        });
-
-    localStorage.setItem(
-        "eptos_daily_rows",
-        JSON.stringify(rows)
-    );
+function loadDailyTable() {  
+    var rows = JSON.parse(localStorage.getItem("eptos_daily_rows"));  
+    if (!rows) return;  
+    document.getElementById('daily-body').innerHTML = "";  
+    rows.forEach(function(row) { addDailyRow([row.time, row.task, row.category, row.priority, row.estimated, row.actual, row.notes]); });  
 }
 
-
-/* =========================
-   LOAD DAILY TABLE
-   ========================= */
-
-function loadDailyTable() {
-
-    var rows = JSON.parse(
-        localStorage.getItem("eptos_daily_rows")
-    );
-
-    if (!rows) return;
-
-    document.getElementById('daily-body').innerHTML = "";
-
-    rows.forEach(function(row) {
-
-        addDailyRow([
-            row.time,
-            row.task,
-            row.category,
-            row.priority,
-            row.estimated,
-            row.actual,
-            row.notes
-        ]);
-    });
+function saveCodingTable() {  
+    var rows = [];  
+    document.querySelectorAll('#coding-body tr').forEach(function(row) {  
+        var inputs = row.querySelectorAll('input, select');  
+        rows.push({ problem: inputs[0]?.value || "", topic: inputs[1]?.value || "", difficulty: inputs[2]?.value || "", time: inputs[3]?.value || "", accuracy: inputs[4]?.value || "", revision: inputs[5]?.value || "", weak: inputs[6]?.value || "" });  
+    });  
+    localStorage.setItem("eptos_coding_rows", JSON.stringify(rows));  
 }
 
-
-/* =========================
-   SAVE CODING TABLE
-   ========================= */
-
-function saveCodingTable() {
-
-    var rows = [];
-
-    document.querySelectorAll('#coding-body tr')
-        .forEach(function(row) {
-
-            var inputs = row.querySelectorAll('input, select');
-
-            rows.push({
-                problem: inputs[0]?.value || "",
-                topic: inputs[1]?.value || "",
-                difficulty: inputs[2]?.value || "",
-                time: inputs[3]?.value || "",
-                accuracy: inputs[4]?.value || "",
-                revision: inputs[5]?.value || "",
-                weak: inputs[6]?.value || ""
-            });
-        });
-
-    localStorage.setItem(
-        "eptos_coding_rows",
-        JSON.stringify(rows)
-    );
+function loadCodingTable() {  
+    var rows = JSON.parse(localStorage.getItem("eptos_coding_rows"));  
+    if (!rows) return;  
+    document.getElementById('coding-body').innerHTML = "";  
+    rows.forEach(function(row) { addCodingRow([row.problem, row.topic, row.difficulty, row.time, "false", row.accuracy, row.revision, row.weak]); });  
+    updateCodingMetrics();  
 }
 
-
-/* =========================
-   LOAD CODING TABLE
-   ========================= */
-
-function loadCodingTable() {
-
-    var rows = JSON.parse(
-        localStorage.getItem("eptos_coding_rows")
-    );
-
-    if (!rows) return;
-
-    document.getElementById('coding-body').innerHTML = "";
-
-    rows.forEach(function(row) {
-
-        addCodingRow([
-            row.problem,
-            row.topic,
-            row.difficulty,
-            row.time,
-            "false",
-            row.accuracy,
-            row.revision,
-            row.weak
-        ]);
-    });
-
-    updateCodingMetrics();
+function saveProjectTable() {  
+    var rows = [];  
+    document.querySelectorAll('#project-body tr').forEach(function(row) {  
+        var inputs = row.querySelectorAll('input, select');  
+        rows.push({ feature: inputs[0]?.value || "", module: inputs[1]?.value || "", status: inputs[2]?.value || "", priority: inputs[3]?.value || "", estimated: inputs[4]?.value || "", actual: inputs[5]?.value || "", notes: inputs[6]?.value || "" });  
+    });  
+    localStorage.setItem("eptos_project_rows", JSON.stringify(rows));  
 }
 
-
-/* =========================
-   SAVE PROJECT TABLE
-   ========================= */
-
-function saveProjectTable() {
-
-    var rows = [];
-
-    document.querySelectorAll('#project-body tr')
-        .forEach(function(row) {
-
-            var inputs = row.querySelectorAll('input, select');
-
-            rows.push({
-                feature: inputs[0]?.value || "",
-                module: inputs[1]?.value || "",
-                status: inputs[2]?.value || "",
-                priority: inputs[3]?.value || "",
-                estimated: inputs[4]?.value || "",
-                actual: inputs[5]?.value || "",
-                notes: inputs[6]?.value || ""
-            });
-        });
-
-    localStorage.setItem(
-        "eptos_project_rows",
-        JSON.stringify(rows)
-    );
+function loadProjectTable() {  
+    var rows = JSON.parse(localStorage.getItem("eptos_project_rows"));  
+    if (!rows) return;  
+    document.getElementById('project-body').innerHTML = "";  
+    rows.forEach(function(row) { addProjectRow([row.feature, row.module, row.status, row.priority, row.estimated, row.actual, row.notes]); });  
+    updateProjectMetrics();  
 }
 
-
-/* =========================
-   LOAD PROJECT TABLE
-   ========================= */
-
-function loadProjectTable() {
-
-    var rows = JSON.parse(
-        localStorage.getItem("eptos_project_rows")
-    );
-
-    if (!rows) return;
-
-    document.getElementById('project-body').innerHTML = "";
-
-    rows.forEach(function(row) {
-
-        addProjectRow([
-            row.feature,
-            row.module,
-            row.status,
-            row.priority,
-            row.estimated,
-            row.actual,
-            row.notes
-        ]);
-    });
-
-    updateProjectMetrics();
+function saveState() { localStorage.setItem("eptos_state", JSON.stringify(state)); }  
+function loadState() {  
+    var saved = JSON.parse(localStorage.getItem("eptos_state"));  
+    if (!saved) return;  
+    state = saved;  
+    buildStreakGrid();  
 }
 
-
-/* =========================
-   SAVE GLOBAL STATE
-   ========================= */
-
-function saveState() {
-
-    localStorage.setItem(
-        "eptos_state",
-        JSON.stringify(state)
-    );
+function loadAllData() {  
+    loadInputs(); loadState(); loadDailyTable(); loadCodingTable(); loadProjectTable(); updateMaster();  
 }
 
-
-/* =========================
-   LOAD GLOBAL STATE
-   ========================= */
-
-function loadState() {
-
-    var saved = JSON.parse(
-        localStorage.getItem("eptos_state")
-    );
-
-    if (!saved) return;
-
-    state = saved;
-
-    buildStreakGrid();
-    updateWeeklyBars();
-}
-
-
-/* =========================
-   LOAD EVERYTHING
-   ========================= */
-
-function loadAllData() {
-
-    loadInputs();
-
-    loadState();
-
-    loadDailyTable();
-
-    loadCodingTable();
-
-    loadProjectTable();
-
-    updateMaster();
-
-    console.log("EPTOS data loaded");
-}
-
-
-/* =========================
-   AUTO SAVE
-   ========================= */
-
-window.addEventListener(
-    "beforeunload",
-    saveAllData
-);
-
-
-/* =========================
-   AUTO LOAD
-   ========================= */
-
-window.addEventListener(
-    "load",
-    loadAllData
-);
-
-
-/* =========================
-   OPTIONAL:
-   SAVE EVERY 10 SECONDS
-   ========================= */
-
+window.addEventListener("beforeunload", saveAllData);  
+window.addEventListener("load", loadAllData);  
 setInterval(saveAllData, 10000);
 
-const ctx = document.getElementById('progressChart');
-
-if (ctx) {
-    new Chart(ctx, {
-        type: 'line',
-
-        data: {
-            labels: [
-                'Week 1',
-                'Week 2',
-                'Week 3',
-                'Week 4'
-            ],
-
-            datasets: [
-                {
-                    label: 'Placement Readiness',
-
-                    data: [18, 32, 47, 71],
-
-                    borderColor: '#3b82f6',
-
-                    backgroundColor:
-                        'rgba(59,130,246,0.2)',
-
-                    tension: 0.4,
-
-                    fill: true
-                }
-            ]
-        },
-
-        options: {
-            responsive: true,
-
-            plugins: {
-                legend: {
-                    labels: {
-                        color: 'white'
-                    }
-                }
-            },
-
-            scales: {
-                x: {
-                    ticks: {
-                        color: 'white'
-                    }
-                },
-
-                y: {
-                    ticks: {
-                        color: 'white'
-                    }
-                }
-            }
-        }
-    });
+// --- GEMINI AI INTEGRATION ---  
+async function askCoach() {  
+    var promptInput = document.getElementById('ai-prompt').value;  
+    if (!promptInput) return;  
+    var responseDiv = document.getElementById('ai-response');  
+    responseDiv.style.color = '#3b82f6';  
+    responseDiv.textContent = "Analyzing...";  
+    let apiKey = localStorage.getItem("GEMINI_API_KEY");  
+    if (!apiKey) {  
+        apiKey = prompt("Welcome to the AI Coach! Enter your free Gemini API Key:");  
+        if (!apiKey) { responseDiv.textContent = "API Key required."; return; }  
+        localStorage.setItem("GEMINI_API_KEY", apiKey);  
+    }  
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;  
+    const systemInstruction = "You are a strict technical interview coach helping a student prep for software placements. Answer in 3 sentences or less. Do not use markdown headers. The user says: ";  
+    try {  
+        const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: systemInstruction + promptInput }] }] }) });  
+        const data = await response.json();  
+        if (data.error) { responseDiv.textContent = "Error: " + data.error.message; if (data.error.code === 400 || data.error.code === 403) localStorage.removeItem("GEMINI_API_KEY"); }  
+        else { responseDiv.style.color = "var(--color-text-primary)"; responseDiv.textContent = data.candidates[0].content.parts[0].text; document.getElementById('ai-prompt').value = ""; }  
+    } catch (error) { responseDiv.textContent = "Connection failed."; responseDiv.style.color = "#ef4444"; }  
 }
-
-// --- GEMINI AI INTEGRATION ---
-async function askCoach() {
-    var promptInput = document.getElementById('ai-prompt').value;
-    if (!promptInput) return;
-
-    var responseDiv = document.getElementById('ai-response');
-    responseDiv.style.color = '#3b82f6';
-    responseDiv.textContent = "Analyzing...";
-
-    // 1. Secure API Key Check
-    let apiKey = localStorage.getItem("GEMINI_API_KEY");
-    if (!apiKey) {
-        apiKey = prompt("Welcome to the AI Coach! Enter your free Gemini API Key (It saves securely to your browser):");
-        if (!apiKey) {
-            responseDiv.textContent = "API Key required to use the coach.";
-            responseDiv.style.color = "var(--color-text-secondary)";
-            return;
-        }
-        localStorage.setItem("GEMINI_API_KEY", apiKey);
-    }
-
-    // 2. Fetch Request to Gemini 1.5 Flash
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    // We add a system prompt wrapper to make it act like a strict tech interviewer
-    const systemInstruction = "You are a strict, concise technical interview coach helping a student prep for software engineering placements. Answer in 3 sentences or less. Do not use markdown headers. The user says: ";
-
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: systemInstruction + promptInput }] }]
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            responseDiv.textContent = "API Error: " + data.error.message;
-            responseDiv.style.color = "#ef4444"; // Red for error
-            if (data.error.code === 400 || data.error.code === 403) {
-                localStorage.removeItem("GEMINI_API_KEY"); // Clear bad key
-            }
-        } else {
-            responseDiv.style.color = "var(--color-text-primary)";
-            responseDiv.textContent = data.candidates[0].content.parts[0].text;
-            document.getElementById('ai-prompt').value = ""; // Clear input
-        }
-        
-    } catch (error) {
-        console.error("AI Error:", error);
-        responseDiv.textContent = "Connection failed. Check console.";
-        responseDiv.style.color = "#ef4444";
-    }
-}
-
 </script>
+</body>
+</html>
