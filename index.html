@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Placement War-Room</title>
-<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
 <style>
+/* --- 1. GLOBAL VARIABLES --- */
 :root {
   --color-background-primary: #ffffff;
   --color-background-secondary: #F8F9FA;
@@ -30,32 +30,70 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary); background-color: #FDFCF8;}
-.font-serif { font-family: 'Lora', serif; }
 
+/* --- 2. BULLETPROOF LAYOUT (Replaces Tailwind) --- */
+.app-container { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 260px; background: #ffffff; border-right: 1px solid #f3f4f6; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; flex-shrink: 0; z-index: 10;}
+.main-area { flex: 1; overflow-y: auto; padding: 2.5rem; position: relative; }
+
+/* Dashboard Grid System */
+.grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+.col-8 { grid-column: span 8; }
+.col-4 { grid-column: span 4; }
+.col-12 { grid-column: span 12; }
+
+/* Flex Helpers */
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.flex-row { display: flex; align-items: center; gap: 8px; }
+.mt-auto { margin-top: auto; }
+
+/* Typography */
+h1 { font-family: 'Lora', serif; font-size: 28px; font-weight: 600; color: #111; margin-bottom: 4px; }
+h2 { font-family: 'Lora', serif; font-size: 32px; font-weight: 600; color: #222; line-height: 1.2; }
+h3 { font-family: 'Lora', serif; font-size: 18px; font-weight: 600; color: #111; margin-bottom: 12px; }
+.subtitle { font-size: 13px; color: #666; }
+
+/* --- 3. UI COMPONENTS --- */
+.nav-sidebar-btn { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 13px; color: #4B5563; transition: all 0.2s; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; }
+.nav-sidebar-btn:hover { background: #F3F4F6; }
+.nav-sidebar-btn.on { background: #FFF4ED; color: #D95F18; }
+
+.card { background:var(--color-background-primary); border:1px solid rgba(0,0,0,0.03); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.03); border-radius:var(--border-radius-lg); padding:1.25rem; margin-bottom:1rem; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.05); }
+
+.card-hero { background: #FFF9F5; border: 1px solid #FFE8D6; border-radius: 24px; padding: 2rem; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+.card-ai { background: #F8F5FF; border: 1px solid #EBE3FF; border-radius: 24px; padding: 1.5rem; display: flex; flex-direction: column; }
+.focus-card { background: #fff; border: 1px solid #f3f4f6; border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; }
+.fc-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+.btn-primary { background: #2D2D2D; color: #fff; padding: 12px 24px; border-radius: 12px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; margin-top: 1.5rem; width: max-content; }
+.btn-primary:hover { background: #000; }
+.btn-outline { background: #fff; color: #4B2E83; border: 1px solid #EBE3FF; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
+.btn-outline:hover { background: #F0EBFF; }
+
+.streak-day { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; cursor: pointer; background: #F3F4F6; color: #9CA3AF; transition: all 0.2s; }
+.streak-day.done { background: #22C55E; color: white; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 10px; }
+
+/* --- 4. OLD TABLE STYLES (Kept intact) --- */
 .pane{display:none}.pane.on{display:block}
-.sec{margin-bottom:1.25rem}
 .sec-hdr{font-size:12px;font-weight:600;color:var(--color-text-primary);margin-bottom:0.8rem;display:flex;align-items:center;gap:6px}
-.card{background:var(--color-background-primary);border:1px solid rgba(0,0,0,0.03);box-shadow: 0 4px 20px -2px rgba(0,0,0,0.03);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem;transition: transform 0.2s ease, box-shadow 0.2s ease;}
-.card:hover{transform: translateY(-2px);box-shadow: 0 8px 25px -5px rgba(0,0,0,0.05);}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .m{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;text-align:center;border:1px solid rgba(0,0,0,0.02)}
 .m-val{font-size:24px;font-weight:600;line-height:1.1}
 .m-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:4px}
-.m-sub{font-size:11px;margin-top:2px}
 .bar-wrap{height:6px;background:var(--color-border-tertiary);border-radius:4px;margin-top:8px;overflow:hidden}
 .bar{height:100%;border-radius:4px;transition:width 0.4s}
-.badge{display:inline-block;font-size:10px;font-weight:500;padding:3px 8px;border-radius:12px}
-.b-r{background:var(--color-background-danger);color:var(--color-text-danger)}
-.b-a{background:var(--color-background-warning);color:var(--color-text-warning)}
-.b-g{background:var(--color-background-success);color:var(--color-text-success)}
-.b-b{background:var(--color-background-info);color:var(--color-text-info)}
-.b-n{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
 .tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
 .tbl th{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-align:left;padding:8px 8px;border-bottom:1px solid var(--color-border-secondary);white-space:nowrap;overflow:hidden}
 .tbl td{padding:8px 8px;border-bottom:1px solid var(--color-border-tertiary);vertical-align:middle;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:var(--color-background-secondary)}
 .inp{width:100%;font-size:12px;font-family:var(--font-sans);background:transparent;border:none;color:var(--color-text-primary);padding:0}
 .inp:focus{outline:none}
@@ -65,434 +103,305 @@ body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)
 .star{width:14px;height:14px;border-radius:3px;background:var(--color-border-tertiary)}
 .star.on{background:var(--color-text-warning)}
 .add-row-btn{font-size:11px;padding:6px 12px;border-radius:6px;border:1px dashed var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-weight:500;margin-top:6px}
-.add-row-btn:hover{background:var(--color-background-secondary)}
 .del-btn{font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
-.del-btn:hover{background:var(--color-background-danger);color:var(--color-text-danger);border-color:var(--color-border-danger,var(--color-border-tertiary))}
 .action-btn{font-size:12px;padding:8px 16px;border-radius:20px;border:1px solid var(--color-border-secondary);background:white;color:var(--color-text-primary);cursor:pointer;font-weight:500;margin:4px 4px 0 0;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
-.action-btn:hover{background:var(--color-background-secondary)}
-.priority-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
-.streak-day { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; cursor: pointer; background: #F3F4F6; color: #9CA3AF; transition: all 0.2s; }
-.streak-day.done { background: #22C55E; color: white; }
-.streak-day.today { border: 2px solid #3b82f6; }
-.nav-sidebar-btn { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 13px; color: #4B5563; transition: all 0.2s; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; }
-.nav-sidebar-btn:hover { background: #F3F4F6; }
-.nav-sidebar-btn.on { background: #FFF4ED; color: #D95F18; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 10px; }
 </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body>
 
-<aside class="w-64 bg-white border-r border-gray-100 flex flex-col justify-between p-6 shrink-0 z-20">
-    <div>
-        <div class="flex items-center gap-3 mb-10">
-            <div class="text-orange-400 text-2xl">✦</div>
-            <div>
-                <h2 class="font-serif font-semibold text-lg leading-tight">Placement</h2>
-                <p class="text-xs text-gray-500">War-Room</p>
-            </div>
-        </div>
-        <nav class="space-y-1">
-            <button class="nav-sidebar-btn on" onclick="sw('master',this)"><span>🏠</span> Dashboard</button>
-            <button class="nav-sidebar-btn" onclick="sw('daily',this)"><span>📅</span> Daily Sheet</button>
-            <button class="nav-sidebar-btn" onclick="sw('coding',this)"><span>&lt;/&gt;</span> Coding</button>
-            <button class="nav-sidebar-btn" onclick="sw('aptitude',this)"><span>📊</span> Aptitude</button>
-            <button class="nav-sidebar-btn" onclick="sw('comm',this)"><span>💬</span> Communication</button>
-            <button class="nav-sidebar-btn" onclick="sw('project',this)"><span>💻</span> Project</button>
-            <button class="nav-sidebar-btn" onclick="sw('weekly',this)"><span>📈</span> Weekly Review</button>
-        </nav>
-    </div>
-    <div class="space-y-4">
-        <div class="card !p-3 flex items-center gap-3 !mb-0 !shadow-sm">
-            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-xl">👨🏽‍💻</div>
-            <div><h4 class="font-semibold text-sm">Vedanth</h4><p class="text-xs text-gray-500">Level 3 • 420 XP</p></div>
-        </div>
-        <div class="bg-[#FFF4ED] rounded-xl p-4">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="text-2xl">🔥</span>
-                <h3 class="font-serif text-2xl font-semibold text-[#D95F18]" id="streak-display">0d</h3>
-            </div>
-            <p class="text-xs font-medium text-[#D95F18]">Day Streak</p>
-            <p class="text-[10px] text-orange-400 mt-1">Keep it going!</p>
-        </div>
-    </div>
-</aside>
-
-<main class="flex-1 overflow-y-auto p-8 relative">
+<div class="app-container">
     
-    <header class="flex justify-between items-end mb-8">
+    <aside class="sidebar">
         <div>
-            <h1 class="font-serif text-3xl font-semibold mb-1 text-gray-900">Good evening, Vedanth <span class="text-2xl">👋</span></h1>
-            <p class="text-sm text-gray-500">Day <span id="cur-day">1</span> of 40 <span class="mx-2">•</span> EPTOS Mission <span class="mx-2">•</span> <span id="cur-date"></span></p>
+            <div class="flex-row" style="margin-bottom:2.5rem;">
+                <div style="color:#fb923c; font-size:24px;">✦</div>
+                <div>
+                    <h2 style="font-size:18px; margin:0;">Placement</h2>
+                    <p style="font-size:12px; color:#888; margin:0;">War-Room</p>
+                </div>
+            </div>
+            <nav style="display:flex; flex-direction:column; gap:4px;">
+                <button class="nav-sidebar-btn on" onclick="sw('master',this)">🏠 Dashboard</button>
+                <button class="nav-sidebar-btn" onclick="sw('daily',this)">📅 Daily Sheet</button>
+                <button class="nav-sidebar-btn" onclick="sw('coding',this)">&lt;/&gt; Coding</button>
+                <button class="nav-sidebar-btn" onclick="sw('aptitude',this)">📊 Aptitude</button>
+                <button class="nav-sidebar-btn" onclick="sw('comm',this)">💬 Communication</button>
+                <button class="nav-sidebar-btn" onclick="sw('project',this)">💻 Project</button>
+                <button class="nav-sidebar-btn" onclick="sw('weekly',this)">📈 Weekly Review</button>
+            </nav>
         </div>
-        <div class="flex gap-3">
-            <button class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-sm text-gray-700">
-                ◎ Focus Mode
-            </button>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="card" style="padding:12px; margin:0; display:flex; align-items:center; gap:12px; box-shadow:none;">
+                <div style="width:40px; height:40px; background:#dbeafe; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">👨🏽‍💻</div>
+                <div><h4 style="font-size:13px; margin:0;">Vedanth</h4><p style="font-size:11px; color:#888; margin:0;">Level 3 • 420 XP</p></div>
+            </div>
+            <div style="background:#FFF4ED; border-radius:16px; padding:16px;">
+                <div class="flex-row" style="margin-bottom:4px;">
+                    <span style="font-size:24px;">🔥</span>
+                    <h3 style="margin:0; font-size:24px; color:#D95F18;" id="streak-display">0d</h3>
+                </div>
+                <p style="font-size:12px; font-weight:600; color:#D95F18; margin:0;">Day Streak</p>
+            </div>
         </div>
-    </header>
+    </aside>
 
-    <div id="pane-master" class="pane on">
+    <main class="main-area">
         
-        <div class="grid grid-cols-12 gap-6 mb-6">
+        <header class="flex-between" style="margin-bottom:2rem;">
+            <div>
+                <h1>Good evening, Vedanth 👋</h1>
+                <p class="subtitle">Day <span id="cur-day">1</span> of 40 <span style="margin:0 8px;">•</span> EPTOS Mission <span style="margin:0 8px;">•</span> <span id="cur-date"></span></p>
+            </div>
+            <button style="padding:8px 16px; background:#fff; border:1px solid #e5e7eb; border-radius:20px; font-size:13px; font-weight:500; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05);">◎ Focus Mode</button>
+        </header>
+
+        <div id="pane-master" class="pane on">
             
-            <div class="col-span-8 bg-[#FFF9F5] rounded-[2rem] p-8 relative overflow-hidden flex flex-col justify-center border border-[#FFE8D6]">
-                <h2 class="font-serif text-4xl font-semibold leading-tight text-[#2D2D2D] relative z-10">
-                    Small steps today,<br><span class="text-[#D95F18]">big results</span> tomorrow.
-                </h2>
-                <p class="text-sm text-gray-600 mt-4 max-w-xs relative z-10">Stay consistent, trust the process, and the results will follow.</p>
-                <button class="mt-6 px-6 py-3 bg-[#2D2D2D] text-white rounded-xl w-max text-sm font-medium hover:bg-black transition-colors relative z-10 shadow-lg">
-                    Start Today's Focus →
-                </button>
-                <div class="absolute right-[-5%] bottom-[-20%] w-64 h-64 bg-[#FFE5D4] rounded-full opacity-50 mix-blend-multiply blur-2xl"></div>
-                <div class="absolute right-[10%] top-[10%] text-6xl opacity-20">⛰️</div>
-            </div>
-
-            <div class="col-span-4 bg-[#F8F5FF] rounded-[2rem] p-6 border border-[#EBE3FF] flex flex-col">
-                <div class="flex items-center gap-2 mb-4">
-                    <h3 class="font-serif text-lg font-semibold text-[#4B2E83]">AI Coach</h3>
-                    <span class="text-[10px] bg-white text-[#4B2E83] px-2 py-0.5 rounded-full font-semibold border border-[#EBE3FF]">Beta</span>
+            <div class="grid-12">
+                <div class="col-8 card-hero">
+                    <h2>Small steps today,<br><span style="color:#D95F18">big results</span> tomorrow.</h2>
+                    <p class="subtitle" style="margin-top:8px;">Stay consistent, trust the process, and the results will follow.</p>
+                    <button class="btn-primary">Start Today's Focus →</button>
+                    <div style="position:absolute; right:-5%; bottom:-20%; width:250px; height:250px; background:#FFE5D4; border-radius:50%; opacity:0.5; filter:blur(40px);"></div>
                 </div>
-                <p class="text-xs font-semibold text-gray-800 mb-1">Your consistency is key.</p>
-                <p class="text-[11px] text-gray-600 mb-4 line-clamp-2">Main risk: Inconsistent execution. Suggested focus: Morning coding block.</p>
-                <div class="mt-auto">
-                    <input type="text" id="ai-prompt" placeholder="Ask a LeetCode question..." class="w-full bg-white text-xs p-3 rounded-xl border border-[#EBE3FF] mb-2 outline-none focus:border-[#4B2E83]">
-                    <button onclick="askCoach()" class="w-full py-2.5 bg-white text-[#4B2E83] border border-[#EBE3FF] rounded-xl text-sm font-semibold hover:bg-[#F0EBFF] transition-colors shadow-sm">
-                        Chat with Coach →
-                    </button>
-                    <div id="ai-response" class="mt-2 text-[11px] text-gray-600"></div>
-                </div>
-            </div>
 
-            <div class="col-span-8">
-                <div class="flex justify-between items-center mb-4"><h3 class="font-serif font-semibold text-lg text-gray-900">Today's Focus</h3></div>
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="card !p-4 flex flex-col !bg-[#F4FBFA] !border-[#E0F2F1] !mb-0"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#0D9488] mb-3 text-sm shadow-sm">&lt;/&gt;</div><p class="text-xs font-medium text-gray-800 mb-4">Solve 2 LC problems</p></div>
-                    <div class="card !p-4 flex flex-col !bg-[#FFF9F0] !border-[#FEF3C7] !mb-0"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#D97706] mb-3 text-sm shadow-sm">📊</div><p class="text-xs font-medium text-gray-800 mb-4">Aptitude sprint</p></div>
-                    <div class="card !p-4 flex flex-col !bg-[#F4F6FF] !border-[#E0E7FF] !mb-0"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#4F46E5] mb-3 text-sm shadow-sm">👥</div><p class="text-xs font-medium text-gray-800 mb-4">HR mock</p></div>
-                    <div class="card !p-4 flex flex-col !bg-[#FAF5FF] !border-[#F3E8FF] !mb-0"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#9333EA] mb-3 text-sm shadow-sm">💬</div><p class="text-xs font-medium text-gray-800 mb-4">English speaking</p></div>
-                </div>
-            </div>
-
-             <div class="col-span-4 card flex flex-col !mb-0">
-                <h3 class="font-serif font-semibold text-lg mb-4 text-gray-900">40-Day Tracker</h3>
-                <div id="streak-grid" class="flex flex-wrap gap-1 mb-2"></div>
-                <p class="text-xs text-gray-500 mt-auto pt-2 border-t border-gray-100">Click a day to mark complete.</p>
-            </div>
-
-            <div class="col-span-8 grid grid-cols-2 gap-6">
-                <div class="card flex flex-col justify-center items-center !mb-0">
-                    <h3 class="font-serif font-semibold text-lg self-start w-full mb-2 text-gray-900">Overall Progress</h3>
-                    <div class="relative w-32 h-32 flex items-center justify-center">
-                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                            <path class="text-gray-100" stroke-width="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path class="text-[#8B5CF6]" stroke-dasharray="100, 100" stroke-width="4" stroke="currentColor" fill="none" stroke-linecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circle-progress" style="transition: stroke-dasharray 0.5s;" />
-                        </svg>
-                        <div class="absolute text-center"><span class="text-2xl font-bold text-gray-900" id="readiness-display">0%</span></div>
+                <div class="col-4 card-ai">
+                    <div class="flex-row" style="margin-bottom:12px;">
+                        <h3 style="margin:0; color:#4B2E83;">AI Coach</h3>
+                        <span style="font-size:10px; border:1px solid #EBE3FF; background:#fff; color:#4B2E83; padding:2px 8px; border-radius:12px; font-weight:bold;">Beta</span>
+                    </div>
+                    <p style="font-size:12px; font-weight:600; color:#333; margin-bottom:4px;">Your consistency is key.</p>
+                    <p style="font-size:11px; color:#666; margin-bottom:16px;">Main risk: Inconsistent execution. Suggested focus: Morning coding block.</p>
+                    <div class="mt-auto">
+                        <input type="text" id="ai-prompt" placeholder="Ask a LeetCode question..." style="width:100%; padding:10px; border-radius:12px; border:1px solid #EBE3FF; font-size:12px; margin-bottom:8px; outline:none;">
+                        <button class="btn-outline" onclick="askCoach()">Chat with Coach →</button>
+                        <div id="ai-response" style="margin-top:8px; font-size:11px; color:#666;"></div>
                     </div>
                 </div>
-                <div class="card !mb-0">
-                    <h3 class="font-serif font-semibold text-lg mb-4 text-gray-900">Weekly Progress</h3>
-                    <div class="h-32 relative"><canvas id="readinessChart"></canvas></div>
+
+                <div class="col-8">
+                    <h3>Today's Focus</h3>
+                    <div class="grid-4">
+                        <div class="focus-card" style="background:#F4FBFA; border-color:#E0F2F1;">
+                            <div class="fc-icon" style="color:#0D9488">&lt;/&gt;</div>
+                            <p style="font-size:12px; font-weight:500;">Solve 2 LC problems</p>
+                        </div>
+                        <div class="focus-card" style="background:#FFF9F0; border-color:#FEF3C7;">
+                            <div class="fc-icon" style="color:#D97706">📊</div>
+                            <p style="font-size:12px; font-weight:500;">Aptitude sprint</p>
+                        </div>
+                        <div class="focus-card" style="background:#F4F6FF; border-color:#E0E7FF;">
+                            <div class="fc-icon" style="color:#4F46E5">👥</div>
+                            <p style="font-size:12px; font-weight:500;">HR mock</p>
+                        </div>
+                        <div class="focus-card" style="background:#FAF5FF; border-color:#F3E8FF;">
+                            <div class="fc-icon" style="color:#9333EA">💬</div>
+                            <p style="font-size:12px; font-weight:500;">English speaking</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="col-span-4 card flex flex-col !mb-0">
-                <h3 class="font-serif font-semibold text-lg mb-4 text-gray-900">Status Analysis</h3>
-                <div id="status-analysis" class="text-xs text-gray-600 space-y-2"></div>
+
+                <div class="col-4 card" style="display:flex; flex-direction:column; margin-bottom:0;">
+                    <h3>40-Day Tracker</h3>
+                    <div id="streak-grid" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;"></div>
+                    <p style="font-size:11px; color:#888; border-top:1px solid #eee; padding-top:8px; margin-top:auto;">Click a day to mark complete.</p>
+                </div>
+
+                <div class="col-8 grid-2">
+                    <div class="card" style="display:flex; flex-direction:column; align-items:center; margin-bottom:0;">
+                        <h3 style="align-self:flex-start; margin-bottom:16px;">Overall Progress</h3>
+                        <div style="position:relative; width:120px; height:120px; display:flex; align-items:center; justify-content:center;">
+                            <svg style="width:100%; height:100%; transform:rotate(-90deg);" viewBox="0 0 36 36">
+                                <path stroke="#f3f4f6" stroke-width="4" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path id="circle-progress" stroke="#8B5CF6" stroke-dasharray="0, 100" stroke-width="4" fill="none" stroke-linecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" style="transition: stroke-dasharray 0.5s;" />
+                            </svg>
+                            <div style="position:absolute; text-align:center;"><span style="font-size:24px; font-weight:bold; color:#111;" id="readiness-display">0%</span></div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-bottom:0;">
+                        <h3>Weekly Progress</h3>
+                        <div style="height:120px; position:relative;"><canvas id="readinessChart"></canvas></div>
+                    </div>
+                </div>
+                
+                <div class="col-4 card" style="margin-bottom:0;">
+                    <h3>Status Analysis</h3>
+                    <div id="status-analysis" style="font-size:12px; color:#555; display:flex; flex-direction:column; gap:8px;"></div>
+                </div>
             </div>
 
-        </div> <div class="card bg-gray-50 border-dashed border-2 border-gray-200 shadow-none">
-            <div class="sec-hdr text-gray-500 mb-4">⚙️ Data Inputs (Drives the charts above)</div>
-            <div class="g3">
-                <div class="flex flex-col gap-1">
-                    <span class="text-xs text-gray-500 flex justify-between">LC solved (0–150) <span id="lc-display" class="font-bold">0</span></span>
-                    <input type="range" min="0" max="150" value="0" step="1" id="lc-solved" oninput="updateMaster()" class="w-full accent-blue-500">
+            <div class="card" style="background:#f9fafb; border:2px dashed #e5e7eb; box-shadow:none;">
+                <div class="sec-hdr" style="color:#6b7280; margin-bottom:16px;">⚙️ Data Inputs (Drives the charts above)</div>
+                <div class="g3">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:11px; color:#6b7280; display:flex; justify-content:space-between;">LC solved (0–150) <span id="lc-display" style="font-weight:bold;">0</span></span>
+                        <input type="range" min="0" max="150" value="0" step="1" id="lc-solved" oninput="updateMaster()" style="width:100%;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:11px; color:#6b7280; display:flex; justify-content:space-between;">Aptitude acc. % <span id="apt-display" style="font-weight:bold;">0%</span></span>
+                        <input type="range" min="0" max="100" value="0" step="1" id="apt-acc" oninput="updateMaster()" style="width:100%;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:11px; color:#6b7280; display:flex; justify-content:space-between;">Project % done <span id="proj-display" style="font-weight:bold;">0%</span></span>
+                        <input type="range" min="0" max="100" value="0" step="1" id="proj-pct" oninput="updateMaster()" style="width:100%;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:11px; color:#6b7280; display:flex; justify-content:space-between;">English conf. /10 <span id="eng-display" style="font-weight:bold;">3</span></span>
+                        <input type="range" min="0" max="10" value="3" step="1" id="eng-conf" oninput="updateMaster()" style="width:100%;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:11px; color:#6b7280; display:flex; justify-content:space-between;">HR mocks done <span id="hr-display" style="font-weight:bold;">0</span></span>
+                        <input type="range" min="0" max="20" value="0" step="1" id="hr-mocks" oninput="updateMaster()" style="width:100%;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:11px; color:#6b7280; display:flex; justify-content:space-between;">Consistency % <span id="consist-display" style="font-weight:bold;">0%</span></span>
+                        <input type="range" min="0" max="100" value="0" step="1" id="consist" oninput="updateMaster()" style="width:100%;">
+                    </div>
                 </div>
-                <div class="flex flex-col gap-1">
-                    <span class="text-xs text-gray-500 flex justify-between">Aptitude acc. % <span id="apt-display" class="font-bold">0%</span></span>
-                    <input type="range" min="0" max="100" value="0" step="1" id="apt-acc" oninput="updateMaster()" class="w-full accent-blue-500">
-                </div>
-                <div class="flex flex-col gap-1">
-                    <span class="text-xs text-gray-500 flex justify-between">Project % done <span id="proj-display" class="font-bold">0%</span></span>
-                    <input type="range" min="0" max="100" value="0" step="1" id="proj-pct" oninput="updateMaster()" class="w-full accent-blue-500">
-                </div>
-                <div class="flex flex-col gap-1">
-                    <span class="text-xs text-gray-500 flex justify-between">English conf. /10 <span id="eng-display" class="font-bold">3</span></span>
-                    <input type="range" min="0" max="10" value="3" step="1" id="eng-conf" oninput="updateMaster()" class="w-full accent-blue-500">
-                </div>
-                <div class="flex flex-col gap-1">
-                    <span class="text-xs text-gray-500 flex justify-between">HR mocks done <span id="hr-display" class="font-bold">0</span></span>
-                    <input type="range" min="0" max="20" value="0" step="1" id="hr-mocks" oninput="updateMaster()" class="w-full accent-blue-500">
-                </div>
-                <div class="flex flex-col gap-1">
-                    <span class="text-xs text-gray-500 flex justify-between">Consistency % <span id="consist-display" class="font-bold">0%</span></span>
-                    <input type="range" min="0" max="100" value="0" step="1" id="consist" oninput="updateMaster()" class="w-full accent-blue-500">
-                </div>
+                <div style="display:none;"><span id="overall-pct"></span><span id="coding-score"></span><span id="apt-score"></span><span id="comm-score"></span><div id="bar-overall"></div><div id="bar-coding"></div><div id="bar-apt"></div><div id="bar-comm"></div></div>
             </div>
-            <div class="hidden"><span id="overall-pct"></span><span id="coding-score"></span><span id="apt-score"></span><span id="comm-score"></span><div id="bar-overall"></div><div id="bar-coding"></div><div id="bar-apt"></div><div id="bar-comm"></div></div>
         </div>
-    </div> <div id="pane-daily" class="pane">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-table" aria-hidden="true"></i>Daily execution sheet</div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <span style="font-size:11px;color:var(--color-text-secondary)">Completion:</span>
-            <span style="font-size:13px;font-weight:500;color:var(--color-text-success)" id="daily-pct">0%</span>
-            <button class="add-row-btn" onclick="addDailyRow()">+ Add row</button>
+
+        <div id="pane-daily" class="pane">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+              <div class="sec-hdr" style="margin-bottom:0">📅 Daily execution sheet</div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span style="font-size:11px;color:var(--color-text-secondary)">Completion:</span>
+                <span style="font-size:13px;font-weight:500;color:var(--color-text-success)" id="daily-pct">0%</span>
+                <button class="add-row-btn" onclick="addDailyRow()">+ Add row</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+            <table class="tbl" id="daily-tbl">
+              <thead><tr><th style="width:70px">Time</th><th style="width:140px">Task</th><th style="width:80px">Category</th><th style="width:44px">Priority</th><th style="width:44px">Est. min</th><th style="width:44px">Act. min</th><th style="width:30px">Done</th><th style="width:50px">Focus</th><th style="width:60px">Difficulty</th><th style="width:36px">ROI</th><th style="width:100px">Notes</th><th style="width:30px"></th></tr></thead>
+              <tbody id="daily-body"></tbody>
+            </table>
+            </div>
           </div>
         </div>
-        <div style="overflow-x:auto">
-        <table class="tbl" id="daily-tbl">
-          <thead>
-            <tr>
-              <th style="width:70px">Time</th>
-              <th style="width:140px">Task</th>
-              <th style="width:80px">Category</th>
-              <th style="width:44px">Priority</th>
-              <th style="width:44px">Est. min</th>
-              <th style="width:44px">Act. min</th>
-              <th style="width:30px">Done</th>
-              <th style="width:50px">Focus</th>
-              <th style="width:60px">Difficulty</th>
-              <th style="width:36px">ROI</th>
-              <th style="width:100px">Notes</th>
-              <th style="width:30px"></th>
-            </tr>
-          </thead>
-          <tbody id="daily-body"></tbody>
-        </table>
+        
+        <div id="pane-coding" class="pane">
+          <div class="g3" style="margin-bottom:0.75rem">
+            <div class="m"><div class="m-val" id="c-total">0</div><div class="m-lbl">Total solved</div><div class="bar-wrap"><div class="bar" id="c-bar-total" style="width:0%;background:var(--color-text-info)"></div></div></div>
+            <div class="m"><div class="m-val" id="c-acc">—</div><div class="m-lbl">Avg accuracy</div><div class="bar-wrap"><div class="bar" id="c-bar-acc" style="width:0%;background:var(--color-text-success)"></div></div></div>
+            <div class="m"><div class="m-val" id="c-streak">0</div><div class="m-lbl">Coding streak</div><div class="bar-wrap"><div class="bar" id="c-bar-streak" style="width:0%;background:var(--color-text-warning)"></div></div></div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+              <div class="sec-hdr" style="margin-bottom:0">&lt;/&gt; Problem log</div>
+              <button class="add-row-btn" onclick="addCodingRow()">+ Add problem</button>
+            </div>
+            <div style="overflow-x:auto">
+            <table class="tbl" id="coding-tbl">
+              <thead><tr><th style="width:28px">#</th><th style="width:130px">Problem name</th><th style="width:75px">Topic</th><th style="width:55px">Difficulty</th><th style="width:44px">Time (min)</th><th style="width:50px">Solved?</th><th style="width:55px">Accuracy</th><th style="width:44px">Revisions</th><th style="width:80px">Weak pattern</th><th style="width:28px"></th></tr></thead>
+              <tbody id="coding-body"></tbody>
+            </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-hdr">📊 Topic mastery tracker</div>
+            <div id="topic-mastery" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
         </div>
-        <div style="margin-top:8px;display:flex;gap:12px;font-size:11px;color:var(--color-text-secondary)">
-          <span><span class="priority-dot" style="background:var(--color-text-danger)"></span>P1 Critical</span>
-          <span><span class="priority-dot" style="background:var(--color-text-warning)"></span>P2 High</span>
-          <span><span class="priority-dot" style="background:var(--color-text-info)"></span>P3 Medium</span>
-          <span><span class="priority-dot" style="background:var(--color-border-secondary)"></span>P4 Low</span>
+        
+        <div id="pane-project" class="pane">
+          <div class="g4" style="margin-bottom:0.75rem">
+            <div class="m"><div class="m-val" id="p-commits">0</div><div class="m-lbl">GitHub commits</div></div>
+            <div class="m"><div class="m-val" id="p-features">0/12</div><div class="m-lbl">Features done</div></div>
+            <div class="m"><div class="m-val" id="p-bugs">0</div><div class="m-lbl">Bugs fixed</div></div>
+            <div class="m"><div class="m-val" id="p-deploy" style="color:var(--color-text-danger)">No</div><div class="m-lbl">Deployed</div></div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+              <div class="sec-hdr" style="margin-bottom:0">💻 Feature tracker</div>
+              <button class="add-row-btn" onclick="addProjectRow()">+ Add feature</button>
+            </div>
+            <div style="overflow-x:auto">
+            <table class="tbl" id="project-tbl">
+              <thead><tr><th style="width:130px">Feature</th><th style="width:65px">Module</th><th style="width:55px">Status</th><th style="width:44px">Priority</th><th style="width:55px">Est. hrs</th><th style="width:55px">Act. hrs</th><th style="width:30px">Done</th><th style="width:80px">Notes</th><th style="width:28px"></th></tr></thead>
+              <tbody id="project-body"></tbody>
+            </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-hdr">⚙️ Progress by module</div>
+            <div id="proj-modules" style="display:flex;flex-direction:column;gap:7px"></div>
+          </div>
         </div>
-      </div>
-    </div>
-    
-    <div id="pane-coding" class="pane">
-      <div class="g3" style="margin-bottom:0.75rem">
-        <div class="m"><div class="m-val" id="c-total">0</div><div class="m-lbl">Total solved</div><div class="bar-wrap"><div class="bar" id="c-bar-total" style="width:0%;background:var(--color-text-info)"></div></div></div>
-        <div class="m"><div class="m-val" id="c-acc">—</div><div class="m-lbl">Avg accuracy</div><div class="bar-wrap"><div class="bar" id="c-bar-acc" style="width:0%;background:var(--color-text-success)"></div></div></div>
-        <div class="m"><div class="m-val" id="c-streak">0</div><div class="m-lbl">Coding streak</div><div class="bar-wrap"><div class="bar" id="c-bar-streak" style="width:0%;background:var(--color-text-warning)"></div></div></div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-code" aria-hidden="true"></i>Problem log</div>
-          <button class="add-row-btn" onclick="addCodingRow()">+ Add problem</button>
+        
+        <div id="pane-comm" class="pane">
+          <div class="g4" style="margin-bottom:0.75rem">
+            <div class="m"><div class="m-val" id="cm-speak">0</div><div class="m-lbl">Speaking mins today</div></div>
+            <div class="m"><div class="m-val" id="cm-mocks">0</div><div class="m-lbl">HR mocks done</div></div>
+            <div class="m"><div class="m-val" id="cm-vocab">0</div><div class="m-lbl">Vocab words learned</div></div>
+            <div class="m"><div class="m-val" id="cm-conf">3/10</div><div class="m-lbl">Confidence score</div></div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+              <div class="sec-hdr" style="margin-bottom:0">💬 Mock interview log</div>
+              <button class="add-row-btn" onclick="addCommRow()">+ Add session</button>
+            </div>
+            <div style="overflow-x:auto">
+            <table class="tbl" id="comm-tbl">
+              <thead><tr><th style="width:55px">Date</th><th style="width:80px">Session type</th><th style="width:110px">Questions practiced</th><th style="width:55px">Duration</th><th style="width:55px">Confidence</th><th style="width:55px">Fluency</th><th style="width:100px">Improvements noted</th><th style="width:28px"></th></tr></thead>
+              <tbody id="comm-body"></tbody>
+            </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-hdr">📝 HR answer mastery</div>
+            <div id="hr-mastery" style="display:flex;flex-direction:column;gap:5px"></div>
+          </div>
         </div>
-        <div style="overflow-x:auto">
-        <table class="tbl" id="coding-tbl">
-          <thead>
-            <tr>
-              <th style="width:28px">#</th>
-              <th style="width:130px">Problem name</th>
-              <th style="width:75px">Topic</th>
-              <th style="width:55px">Difficulty</th>
-              <th style="width:44px">Time (min)</th>
-              <th style="width:50px">Solved?</th>
-              <th style="width:55px">Accuracy</th>
-              <th style="width:44px">Revisions</th>
-              <th style="width:80px">Weak pattern</th>
-              <th style="width:28px"></th>
-            </tr>
-          </thead>
-          <tbody id="coding-body"></tbody>
-        </table>
+        
+        <div id="pane-aptitude" class="pane">
+          <div class="g4" style="margin-bottom:0.75rem">
+            <div class="m"><div class="m-val" id="ap-acc">0%</div><div class="m-lbl">Overall accuracy</div><div class="bar-wrap"><div class="bar" id="ap-bar" style="width:0%;background:var(--color-text-warning)"></div></div></div>
+            <div class="m"><div class="m-val" id="ap-speed">—</div><div class="m-lbl">Avg sec/question</div></div>
+            <div class="m"><div class="m-val" id="ap-mocks">0</div><div class="m-lbl">Mocks completed</div></div>
+            <div class="m"><div class="m-val" id="ap-weak">—</div><div class="m-lbl">Weakest topic</div></div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+              <div class="sec-hdr" style="margin-bottom:0">🧠 Mock test log</div>
+              <button class="add-row-btn" onclick="addAptRow()">+ Add mock test</button>
+            </div>
+            <div style="overflow-x:auto">
+            <table class="tbl" id="apt-tbl">
+              <thead><tr><th style="width:55px">Date</th><th style="width:80px">Topics covered</th><th style="width:44px">Score %</th><th style="width:55px">Time taken</th><th style="width:55px">Speed (s/Q)</th><th style="width:80px">Weak areas</th><th style="width:100px">Mistakes noted</th><th style="width:28px"></th></tr></thead>
+              <tbody id="apt-body"></tbody>
+            </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-hdr">📊 Topic mastery — aptitude</div>
+            <div id="apt-topics" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="sec-hdr"><i class="ti ti-chart-bar" aria-hidden="true"></i>Topic mastery tracker</div>
-        <div id="topic-mastery" style="display:flex;flex-direction:column;gap:6px"></div>
-      </div>
-    </div>
-    
-    <div id="pane-project" class="pane">
-      <div class="g4" style="margin-bottom:0.75rem">
-        <div class="m"><div class="m-val" id="p-commits">0</div><div class="m-lbl">GitHub commits</div></div>
-        <div class="m"><div class="m-val" id="p-features">0/12</div><div class="m-lbl">Features done</div></div>
-        <div class="m"><div class="m-val" id="p-bugs">0</div><div class="m-lbl">Bugs fixed</div></div>
-        <div class="m"><div class="m-val" id="p-deploy" style="color:var(--color-text-danger)">No</div><div class="m-lbl">Deployed</div></div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-device-laptop" aria-hidden="true"></i>Feature tracker</div>
-          <button class="add-row-btn" onclick="addProjectRow()">+ Add feature</button>
+        
+        <div id="pane-weekly" class="pane">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+              <div class="sec-hdr" style="margin-bottom:0">📈 Weekly review</div>
+              <select id="week-select" onchange="loadWeek()" style="font-size:12px;padding:3px 8px;border-radius:4px;border:1px solid #e5e7eb;background:#F8F9FA;">
+                <option value="1">Week 1 (Days 1–10)</option>
+                <option value="2">Week 2 (Days 11–20)</option>
+                <option value="3">Week 3 (Days 21–30)</option>
+                <option value="4">Week 4 (Days 31–40)</option>
+              </select>
+            </div>
+            <div class="g4" style="margin-bottom:0.75rem">
+              <div class="m"><div class="m-val" id="w-lc">—</div><div class="m-lbl">LC solved</div></div>
+              <div class="m"><div class="m-val" id="w-apt">—</div><div class="m-lbl">Apt. accuracy</div></div>
+              <div class="m"><div class="m-val" id="w-hr">—</div><div class="m-lbl">HR mocks</div></div>
+              <div class="m"><div class="m-val" id="w-cons">—</div><div class="m-lbl">Consistency</div></div>
+            </div>
+          </div>
         </div>
-        <div style="overflow-x:auto">
-        <table class="tbl" id="project-tbl">
-          <thead>
-            <tr>
-              <th style="width:130px">Feature</th>
-              <th style="width:65px">Module</th>
-              <th style="width:55px">Status</th>
-              <th style="width:44px">Priority</th>
-              <th style="width:55px">Est. hrs</th>
-              <th style="width:55px">Act. hrs</th>
-              <th style="width:30px">Done</th>
-              <th style="width:80px">Notes</th>
-              <th style="width:28px"></th>
-            </tr>
-          </thead>
-          <tbody id="project-body"></tbody>
-        </table>
-        </div>
-      </div>
-      <div class="card">
-        <div class="sec-hdr"><i class="ti ti-gauge" aria-hidden="true"></i>Progress by module</div>
-        <div id="proj-modules" style="display:flex;flex-direction:column;gap:7px"></div>
-        <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:12px;color:var(--color-text-secondary)">Deployment status:</span>
-          <select id="deploy-select" onchange="updateDeployStatus()" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
-            <option value="no">Not started</option>
-            <option value="local">Running locally</option>
-            <option value="staging">Staging deployed</option>
-            <option value="live">Live on Vercel</option>
-          </select>
-          <span style="font-size:12px;color:var(--color-text-secondary)">Resume-ready:</span>
-          <select id="resume-ready" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
-            <option>No</option><option>Partially</option><option>Yes</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    
-    <div id="pane-comm" class="pane">
-      <div class="g4" style="margin-bottom:0.75rem">
-        <div class="m"><div class="m-val" id="cm-speak">0</div><div class="m-lbl">Speaking mins today</div></div>
-        <div class="m"><div class="m-val" id="cm-mocks">0</div><div class="m-lbl">HR mocks done</div></div>
-        <div class="m"><div class="m-val" id="cm-vocab">0</div><div class="m-lbl">Vocab words learned</div></div>
-        <div class="m"><div class="m-val" id="cm-conf">3/10</div><div class="m-lbl">Confidence score</div></div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-microphone" aria-hidden="true"></i>Mock interview log</div>
-          <button class="add-row-btn" onclick="addCommRow()">+ Add session</button>
-        </div>
-        <div style="overflow-x:auto">
-        <table class="tbl" id="comm-tbl">
-          <thead>
-            <tr>
-              <th style="width:55px">Date</th>
-              <th style="width:80px">Session type</th>
-              <th style="width:110px">Questions practiced</th>
-              <th style="width:55px">Duration</th>
-              <th style="width:55px">Confidence</th>
-              <th style="width:55px">Fluency</th>
-              <th style="width:100px">Improvements noted</th>
-              <th style="width:28px"></th>
-            </tr>
-          </thead>
-          <tbody id="comm-body"></tbody>
-        </table>
-        </div>
-      </div>
-      <div class="card">
-        <div class="sec-hdr"><i class="ti ti-list-check" aria-hidden="true"></i>HR answer mastery</div>
-        <div id="hr-mastery" style="display:flex;flex-direction:column;gap:5px"></div>
-      </div>
-    </div>
-    
-    <div id="pane-aptitude" class="pane">
-      <div class="g4" style="margin-bottom:0.75rem">
-        <div class="m"><div class="m-val" id="ap-acc">0%</div><div class="m-lbl">Overall accuracy</div><div class="bar-wrap"><div class="bar" id="ap-bar" style="width:0%;background:var(--color-text-warning)"></div></div></div>
-        <div class="m"><div class="m-val" id="ap-speed">—</div><div class="m-lbl">Avg sec/question</div></div>
-        <div class="m"><div class="m-val" id="ap-mocks">0</div><div class="m-lbl">Mocks completed</div></div>
-        <div class="m"><div class="m-val" id="ap-weak">—</div><div class="m-lbl">Weakest topic</div></div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-brain" aria-hidden="true"></i>Mock test log</div>
-          <button class="add-row-btn" onclick="addAptRow()">+ Add mock test</button>
-        </div>
-        <div style="overflow-x:auto">
-        <table class="tbl" id="apt-tbl">
-          <thead>
-            <tr>
-              <th style="width:55px">Date</th>
-              <th style="width:80px">Topics covered</th>
-              <th style="width:44px">Score %</th>
-              <th style="width:55px">Time taken</th>
-              <th style="width:55px">Speed (s/Q)</th>
-              <th style="width:80px">Weak areas</th>
-              <th style="width:100px">Mistakes noted</th>
-              <th style="width:28px"></th>
-            </tr>
-          </thead>
-          <tbody id="apt-body"></tbody>
-        </table>
-        </div>
-      </div>
-      <div class="card">
-        <div class="sec-hdr"><i class="ti ti-chart-bar" aria-hidden="true"></i>Topic mastery — aptitude</div>
-        <div id="apt-topics" style="display:flex;flex-direction:column;gap:6px"></div>
-      </div>
-    </div>
-    
-    <div id="pane-weekly" class="pane">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-          <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-calendar-stats" aria-hidden="true"></i>Weekly review</div>
-          <select id="week-select" onchange="loadWeek()" style="font-size:12px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)">
-            <option value="1">Week 1 (Days 1–10)</option>
-            <option value="2">Week 2 (Days 11–20)</option>
-            <option value="3">Week 3 (Days 21–30)</option>
-            <option value="4">Week 4 (Days 31–40)</option>
-          </select>
-        </div>
-        <div class="g4" style="margin-bottom:0.75rem">
-          <div class="m"><div class="m-val" id="w-lc">—</div><div class="m-lbl">LC solved</div></div>
-          <div class="m"><div class="m-val" id="w-apt">—</div><div class="m-lbl">Apt. accuracy</div></div>
-          <div class="m"><div class="m-val" id="w-hr">—</div><div class="m-lbl">HR mocks</div></div>
-          <div class="m"><div class="m-val" id="w-cons">—</div><div class="m-lbl">Consistency</div></div>
-        </div>
-      </div>
-    
-      <div class="g2">
-        <div class="card" style="margin-bottom:0">
-          <div class="sec-hdr"><i class="ti ti-trophy" aria-hidden="true"></i>Wins this week</div>
-          <textarea id="w-wins" placeholder="What went well? What did you complete?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
-        </div>
-        <div class="card" style="margin-bottom:0">
-          <div class="sec-hdr"><i class="ti ti-x" aria-hidden="true"></i>Failures &amp; misses</div>
-          <textarea id="w-fails" placeholder="What did you skip? What went wrong?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
-        </div>
-        <div class="card" style="margin-bottom:0">
-          <div class="sec-hdr"><i class="ti ti-barrier-block" aria-hidden="true"></i>Bottlenecks &amp; distractions</div>
-          <textarea id="w-blocks" placeholder="What slowed you down? What distracted you?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
-        </div>
-        <div class="card" style="margin-bottom:0">
-          <div class="sec-hdr"><i class="ti ti-refresh" aria-hidden="true"></i>Strategy changes for next week</div>
-          <textarea id="w-strategy" placeholder="What will you do differently? What needs to change?" style="width:100%;font-size:12px;border:none;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);resize:none;line-height:1.6;outline:none;min-height:80px"></textarea>
-        </div>
-      </div>
-      <div class="card" style="margin-top:0.75rem">
-        <div class="sec-hdr"><i class="ti ti-arrow-right" aria-hidden="true"></i>Next week top 3 priorities</div>
-        <div style="display:flex;flex-direction:column;gap:6px" id="next-priorities">
-          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-danger);width:16px;flex-shrink:0">P1</span><input type="text" placeholder="Most important focus next week" style="flex:1;font-size:12px"></div>
-          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-warning);width:16px;flex-shrink:0">P2</span><input type="text" placeholder="Second priority" style="flex:1;font-size:12px"></div>
-          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;font-weight:500;color:var(--color-text-info);width:16px;flex-shrink:0">P3</span><input type="text" placeholder="Third priority" style="flex:1;font-size:12px"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="sec-hdr"><i class="ti ti-hash" aria-hidden="true"></i>Week hash generator</div>
-        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Fill the weekly metrics above, then generate your hash to carry into the next chat session.</div>
-        <div class="g2" style="margin-bottom:8px">
-          <div><label style="font-size:11px;color:var(--color-text-secondary)">LC solved (total)</label><input type="number" id="h-lc" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-          <div><label style="font-size:11px;color:var(--color-text-secondary)">Aptitude acc %</label><input type="number" id="h-apt" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-          <div><label style="font-size:11px;color:var(--color-text-secondary)">HR mocks done</label><input type="number" id="h-hr" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-          <div><label style="font-size:11px;color:var(--color-text-secondary)">Consistency %</label><input type="number" id="h-cons" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-          <div><label style="font-size:11px;color:var(--color-text-secondary)">Project % done</label><input type="number" id="h-proj" placeholder="0" style="width:100%;margin-top:3px;font-size:12px"></div>
-          <div><label style="font-size:11px;color:var(--color-text-secondary)">Weak area</label><input type="text" id="h-weak" placeholder="e.g. Two pointers" style="width:100%;margin-top:3px;font-size:12px"></div>
-        </div>
-        <button class="action-btn" style="font-size:12px;padding:6px 16px" onclick="genHash()">Generate &amp; send hash ↗</button>
-        <div id="hash-out" style="display:none;margin-top:8px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:0.6rem;font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);line-height:1.7;word-break:break-all"></div>
-      </div>
-    </div>
-</main>
+
+    </main>
+</div>
 
 <script>  
 var state={streak:[],weeklyScores:[0,0,0,0],codingRows:[],projectRows:[],commRows:[],aptRows:[]};
@@ -513,7 +422,8 @@ function buildStreakGrid(){
     var d=document.createElement('div');  
     d.className='streak-day'+(state.streak[i]?' done':'');  
     d.title='Day '+(i+1);  
-    d.setAttribute('data-day',i);  
+    d.setAttribute('data-day',i);
+    if(state.streak[i]) d.innerHTML='✓'; else d.innerHTML=(i+1);
     d.onclick=function(){  
       var idx=parseInt(this.getAttribute('data-day'));  
       state.streak[idx]=!state.streak[idx];  
@@ -530,11 +440,9 @@ function buildStreakGrid(){
 buildStreakGrid();
 
 var readinessChart;
-
 function initChart() {  
   if (readinessChart) { readinessChart.destroy(); }
   var ctx = document.getElementById('readinessChart').getContext('2d');  
-    
   var gradient = ctx.createLinearGradient(0, 0, 0, 160);  
   gradient.addColorStop(0, 'rgba(139, 92, 246, 0.2)'); 
   gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
@@ -544,28 +452,10 @@ function initChart() {
       data: {  
           labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],  
           datasets: [{  
-              label: 'Weekly Progress %',  
-              data: [0, 0, 0, 0],   
-              borderColor: '#8B5CF6',   
-              backgroundColor: gradient,  
-              borderWidth: 2,  
-              fill: true,  
-              tension: 0.4,   
-              pointBackgroundColor: '#fff',  
-              pointBorderColor: '#8B5CF6',  
-              pointBorderWidth: 2,  
-              pointRadius: 4  
+              label: 'Progress %', data: [0, 0, 0, 0], borderColor: '#8B5CF6', backgroundColor: gradient, borderWidth: 2, fill: true, tension: 0.4, pointBackgroundColor: '#fff', pointBorderColor: '#8B5CF6', pointBorderWidth: 2, pointRadius: 4  
           }]  
       },  
-      options: {  
-          responsive: true,  
-          maintainAspectRatio: false,  
-          plugins: { legend: { display: false } },  
-          scales: {   
-            y: { beginAtZero: true, max: 100, ticks: { display: false }, grid: { display: false } },  
-            x: { grid: { display: false } }  
-          }  
-      }  
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { display: false }, grid: { display: false } }, x: { grid: { display: false } } } }  
   });  
   updateChartData();   
 }
@@ -578,7 +468,6 @@ function updateChartData(){
   readinessChart.data.datasets[0].data = actualData;  
   readinessChart.update();  
 }
-
 initChart();  
 
 function updateMaster(){  
@@ -602,10 +491,6 @@ function updateMaster(){
   var projScore=proj;  
   var overall=Math.round((codingScore*0.35+aptScore*0.25+commScore*0.2+projScore*0.1+cons*0.1));
 
-  document.getElementById('overall-pct').textContent=overall+'%';  
-  document.getElementById('coding-score').textContent=codingScore+'%';  
-  document.getElementById('apt-score').textContent=aptScore+'%';  
-  document.getElementById('comm-score').textContent=commScore+'%';  
   document.getElementById('readiness-display').textContent=overall+'%';  
   
   let circlePath = document.getElementById('circle-progress');
@@ -615,7 +500,6 @@ function updateMaster(){
   }
 
   var col=overall<30?'#dc2626':overall<60?'#d97706':'#059669';  
-  document.getElementById('overall-pct').style.color=col;  
   document.getElementById('readiness-display').style.color=col;
 
   var issues=[];  
@@ -632,15 +516,10 @@ function updateMaster(){
   }).join('');  
 }  
 
+// Daily Execution Logic
 var dailyDefaults=[  
   ['5:45–6:00','English warm-up — self-intro 3x aloud','Communication','P1','15','','','','Easy','5',''],  
-  ['6:00–8:00','Coding block 1 — 2 LC problems in C++','Coding','P1','120','','','','Medium','5','Arrays/Strings phase'],  
-  ['8:00–9:30','Aptitude — 1 topic + 25 timed Qs','Aptitude','P1','90','','','','Medium','5','Log every mistake'],  
-  ['9:45–11:45','Coding block 2 — 2 LC problems','Coding','P1','120','','','','Medium','5','Pattern notes'],  
-  ['1:00–3:00','Project / Resume work','Project','P2','120','','','','Medium','4','Day 1–10: resume only'],  
-  ['3:00–4:00','Communication drill — record HR answer','Communication','P1','60','','','','Easy','4','Listen back & redo'],  
-  ['4:00–5:30','Revision sprint — redo yesterday LC','Coding','P1','90','','','','Medium','5','From memory only'],  
-  ['5:30–6:30','Weak area attack','Variable','P2','60','','','','Hard','5',''],  
+  ['6:00–8:00','Coding block 1 — 2 LC problems in C++','Coding','P1','120','','','','Medium','5','Arrays/Strings phase']
 ];
 
 function makeChk(done){  
@@ -649,8 +528,7 @@ function makeChk(done){
   if(done) d.innerHTML='✓';  
   d.onclick=function(){  
     this.classList.toggle('on');  
-    if(this.classList.contains('on')) this.innerHTML='✓';  
-    else this.innerHTML='';  
+    if(this.classList.contains('on')) this.innerHTML='✓'; else this.innerHTML='';  
     updateDailyPct();  
   };  
   return d;  
@@ -676,13 +554,10 @@ function addDailyRow(vals){
   vals=vals||['','','Coding','P1','','','','','Medium','3',''];  
   var tbody=document.getElementById('daily-body');  
   var tr=document.createElement('tr');  
-  var fields=[vals[0],vals[1],null,null,vals[4],vals[5],null,null,null,vals[9],vals[10],null];  
   var html='';  
   html+='<td><input class="inp" value="'+vals[0]+'" placeholder="6:00–8:00"></td>';  
   html+='<td><input class="inp" value="'+vals[1]+'" placeholder="Task description"></td>';  
-  var cats=['Coding','Aptitude','Communication','Project','Resume','Break'];  
   html+='<td><select class="inp" style="font-size:11px"><option>Coding</option><option>Aptitude</option><option>Communication</option><option>Project</option><option>Resume</option><option>Break</option></select></td>';  
-  var pris=['P1','P2','P3','P4'];  
   html+='<td><select class="inp" style="font-size:11px"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td>';  
   html+='<td><input class="inp" type="number" value="'+vals[4]+'" placeholder="60" min="0"></td>';  
   html+='<td><input class="inp" type="number" placeholder="—" min="0"></td>';  
@@ -697,14 +572,11 @@ function addDailyRow(vals){
   var roiTd=document.createElement('td');roiTd.appendChild(makeStars(parseInt(vals[9])||3,5));tr.appendChild(roiTd);  
   var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[10]||'')+'" placeholder="Notes">';tr.appendChild(notesTd);  
   var delTd=document.createElement('td');var delBtn=document.createElement('button');delBtn.className='del-btn';delBtn.innerHTML='X';delBtn.onclick=function(){tr.remove();updateDailyPct();};delTd.appendChild(delBtn);tr.appendChild(delTd);  
-  var priSel=tr.querySelectorAll('select')[1];  
-  priSel.value=vals[3]||'P1';  
-  var catSel=tr.querySelectorAll('select')[0];  
-  catSel.value=vals[2]||'Coding';  
+  tr.querySelectorAll('select')[1].value=vals[3]||'P1';  
+  tr.querySelectorAll('select')[0].value=vals[2]||'Coding';  
   tbody.appendChild(tr);  
   updateDailyPct();  
 }
-
 dailyDefaults.forEach(function(r){addDailyRow(r)});
 
 function updateDailyPct(){  
@@ -712,35 +584,30 @@ function updateDailyPct(){
   var done=document.querySelectorAll('#daily-body .chk.on');  
   var pct=all.length?Math.round(done.length/all.length*100):0;  
   document.getElementById('daily-pct').textContent=pct+'%';  
-  document.getElementById('daily-pct').style.color=pct>=85?'var(--color-text-success)':pct>=50?'var(--color-text-warning)':'var(--color-text-danger)';  
+  document.getElementById('daily-pct').style.color=pct>=85?'#059669':pct>=50?'#d97706':'#dc2626';  
 }
 
-var codingDefaults=[  
-  ['Two Sum','Arrays','Easy','12','true','95','1',''],  
-  ['Valid Anagram','Strings','Easy','18','true','90','1','Forgot to sort'],  
-];  
+// Coding Table Logic
+var codingDefaults=[['Two Sum','Arrays','Easy','12','true','95','1','']];  
 function addCodingRow(vals){  
   vals=vals||['','','Easy','','false','','0',''];  
   var tbody=document.getElementById('coding-body');  
   var rows=tbody.querySelectorAll('tr').length+1;  
-  var tr=document.createElement('tr');  
   var fullTr=document.createElement('tr');  
-  fullTr.innerHTML='<td style="color:var(--color-text-secondary);font-size:11px">'+rows+'</td>'+  
+  fullTr.innerHTML='<td style="color:#6b7280;font-size:11px">'+rows+'</td>'+  
     '<td><input class="inp" value="'+vals[0]+'" placeholder="Problem name"></td>'+  
-    '<td><select class="inp" style="font-size:11px"><option>Arrays</option><option>Strings</option><option>HashMap</option><option>Two Pointers</option><option>Sliding Window</option><option>Binary Search</option><option>Recursion</option><option>Stack/Queue</option><option>Linked List</option><option>Trees</option><option>DP</option><option>Greedy</option><option>Heaps</option></select></td>'+  
+    '<td><select class="inp" style="font-size:11px"><option>Arrays</option><option>Strings</option><option>HashMap</option><option>Two Pointers</option><option>Sliding Window</option><option>Binary Search</option><option>DP</option><option>Trees</option></select></td>'+  
     '<td><select class="inp" style="font-size:11px"><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select></td>'+  
     '<td><input class="inp" type="number" value="'+vals[3]+'" placeholder="—" min="0"></td>';  
   var chkCell=document.createElement('td');chkCell.appendChild(makeChk(vals[4]==='true'));  
   fullTr.appendChild(chkCell); 
-  fullTr.innerHTML+=  
-    '<td><input class="inp" type="number" value="'+vals[5]+'" placeholder="%" min="0" max="100"></td>'+  
-    '<td><input class="inp" type="number" value="'+vals[6]+'" placeholder="0" min="0"></td>'+  
-    '<td><input class="inp" value="'+(vals[7]||'')+'" placeholder="weak pattern"></td>';  
+  fullTr.innerHTML+='<td><input class="inp" type="number" value="'+vals[5]+'" placeholder="%" min="0" max="100"></td><td><input class="inp" type="number" value="'+vals[6]+'" placeholder="0" min="0"></td><td><input class="inp" value="'+(vals[7]||'')+'" placeholder="weak pattern"></td>';  
   var dTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){fullTr.remove();updateCodingMetrics();};dTd.appendChild(dBtn);fullTr.appendChild(dTd);  
+  
   var parsedTr=document.createElement('tbody');parsedTr.innerHTML=fullTr.outerHTML;var realTr=parsedTr.firstChild;  
   realTr.children[5].replaceWith(chkCell); 
-  var topicSel=realTr.querySelector('select');topicSel.value=vals[2]||'Arrays';  
-  var diffSel=realTr.querySelectorAll('select')[1];diffSel.value=vals[3]||'Easy';  
+  realTr.querySelector('select').value=vals[2]||'Arrays';  
+  realTr.querySelectorAll('select')[1].value=vals[3]||'Easy';  
   tbody.appendChild(realTr);  
   updateCodingMetrics();  
 }  
@@ -760,34 +627,19 @@ function updateCodingMetrics(){
   document.getElementById('c-bar-acc').style.width=accCnt?Math.round(accSum/accCnt)+'%':'0%';  
 }
 
-var topicData=[  
-  {name:'Arrays',target:20,done:0},  
-  {name:'Strings',target:15,done:0},  
-  {name:'HashMap',target:10,done:0},  
-  {name:'Two Pointers',target:10,done:0},  
-  {name:'Sliding Window',target:8,done:0},  
-  {name:'Binary Search',target:8,done:0},  
-  {name:'Stack/Queue',target:10,done:0},  
-  {name:'Trees',target:15,done:0},  
-  {name:'DP',target:12,done:0},  
-  {name:'Greedy',target:8,done:0},  
-];  
+var topicData=[{name:'Arrays',target:20,done:0},{name:'Strings',target:15,done:0},{name:'HashMap',target:10,done:0}];  
 function buildTopicMastery(){  
   var el=document.getElementById('topic-mastery');  
   el.innerHTML=topicData.map(function(t){  
     var pct=Math.min(100,Math.round(t.done/t.target*100));  
-    var col=pct<30?'var(--color-text-danger)':pct<70?'var(--color-text-warning)':'var(--color-text-success)';  
-    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:100px;flex-shrink:0">'+t.name+'</span><div class="bar-wrap" style="flex:1;height:8px"><div class="bar" style="width:'+pct+'%;background:'+col+'"></div></div><span style="font-size:11px;font-weight:500;min-width:36px;text-align:right;color:'+col+'">'+t.done+'/'+t.target+'</span><input type="number" min="0" max="'+t.target+'" value="'+t.done+'" style="width:36px;font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)" oninput="topicData['+topicData.indexOf(t)+'].done=Math.min(parseInt(this.value)||0,'+t.target+');buildTopicMastery()"></div>';  
+    var col=pct<30?'#dc2626':pct<70?'#d97706':'#059669';  
+    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:100px;flex-shrink:0">'+t.name+'</span><div class="bar-wrap" style="flex:1;height:8px"><div class="bar" style="width:'+pct+'%;background:'+col+'"></div></div><span style="font-size:11px;font-weight:500;min-width:36px;text-align:right;color:'+col+'">'+t.done+'/'+t.target+'</span><input type="number" min="0" max="'+t.target+'" value="'+t.done+'" style="width:36px;font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid #e5e7eb;background:#F8F9FA;" oninput="topicData['+topicData.indexOf(t)+'].done=Math.min(parseInt(this.value)||0,'+t.target+');buildTopicMastery()"></div>';  
   }).join('');  
 }  
 buildTopicMastery();
 
-var projectFeatures=[  
-  ['File upload UI','Frontend','In progress','P1','4','',''],  
-  ['Gemini API integration','Backend','Not started','P1','6','',''],  
-  ['AI scoring logic','Backend','Not started','P1','5','',''],  
-  ['Feedback display UI','Frontend','Not started','P2','3','',''],  
-];  
+// Project Table
+var projectFeatures=[['File upload UI','Frontend','In progress','P1','4','','']];  
 function addProjectRow(vals){  
   vals=vals||['','Frontend','Not started','P2','','',''];  
   var tbody=document.getElementById('project-body');  
@@ -801,10 +653,8 @@ function addProjectRow(vals){
   var chkTd=document.createElement('td');chkTd.appendChild(makeChk(vals[2]==='Done'));tr.appendChild(chkTd);  
   var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[6]||'')+'" placeholder="Notes">';tr.appendChild(notesTd);  
   var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){tr.remove();updateProjectMetrics();};delTd.appendChild(dBtn);tr.appendChild(delTd);  
-  var sels=tr.querySelectorAll('select');  
-  sels[0].value=vals[1]||'Frontend';  
-  sels[1].value=vals[2]||'Not started';  
-  sels[2].value=vals[3]||'P2';  
+  tr.querySelectorAll('select')[0].value=vals[1]||'Frontend';  
+  tr.querySelectorAll('select')[1].value=vals[2]||'Not started';  
   tbody.appendChild(tr);  
   updateProjectMetrics();  
 }  
@@ -812,8 +662,8 @@ projectFeatures.forEach(function(r){addProjectRow(r)});
 
 function updateProjectMetrics(){  
   var rows=document.querySelectorAll('#project-body tr');  
-  var done=0,bugs=0;  
-  var mods={Frontend:{done:0,total:0},Backend:{done:0,total:0},API:{done:0,total:0},DevOps:{done:0,total:0}};  
+  var done=0;  
+  var mods={Frontend:{done:0,total:0},Backend:{done:0,total:0}};  
   rows.forEach(function(r){  
     var sels=r.querySelectorAll('select');  
     var mod=sels[0]?sels[0].value:'Frontend';  
@@ -822,45 +672,32 @@ function updateProjectMetrics(){
     if(status==='Done'){done++;if(mods[mod]) mods[mod].done++;}  
   });  
   document.getElementById('p-features').textContent=done+'/'+rows.length;  
-  var el=document.getElementById('proj-modules');  
-  el.innerHTML=Object.keys(mods).map(function(m){  
-    var d=mods[m];  
-    var pct=d.total?Math.round(d.done/d.total*100):0;  
-    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:70px;flex-shrink:0">'+m+'</span><div class="bar-wrap" style="flex:1"><div class="bar" style="width:'+pct+'%;background:var(--color-text-info)"></div></div><span style="font-size:11px;font-weight:500;min-width:36px;text-align:right">'+d.done+'/'+d.total+'</span></div>';  
+  document.getElementById('proj-modules').innerHTML=Object.keys(mods).map(function(m){  
+    var d=mods[m]; var pct=d.total?Math.round(d.done/d.total*100):0;  
+    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:70px;flex-shrink:0">'+m+'</span><div class="bar-wrap" style="flex:1"><div class="bar" style="width:'+pct+'%;background:#2563eb"></div></div><span style="font-size:11px;font-weight:500;min-width:36px;text-align:right">'+d.done+'/'+d.total+'</span></div>';  
   }).join('');  
 }
 
-function updateDeployStatus(){  
-  var v=document.getElementById('deploy-select').value;  
-  var el=document.getElementById('p-deploy');  
-  if(v==='live'){el.textContent='Live';el.style.color='var(--color-text-success)';}  
-  else if(v==='staging'){el.textContent='Staging';el.style.color='var(--color-text-warning)';}  
-  else if(v==='local'){el.textContent='Local';el.style.color='var(--color-text-info)';}  
-  else{el.textContent='No';el.style.color='var(--color-text-danger)';}  
-}
-
+// Comm Table
 function addCommRow(vals){  
   vals=vals||['','HR mock','','30','','',''];  
   var tbody=document.getElementById('comm-body');  
   var tr=document.createElement('tr');  
   tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="DD/MM"></td>'+  
-    '<td><select class="inp" style="font-size:11px"><option>HR mock</option><option>Self-intro</option><option>Project explain</option><option>Tech explain</option><option>Speaking drill</option></select></td>'+  
-    '<td><input class="inp" value="'+(vals[2]||'')+'" placeholder="Questions covered"></td>'+  
+    '<td><select class="inp" style="font-size:11px"><option>HR mock</option><option>Self-intro</option><option>Speaking drill</option></select></td>'+  
+    '<td><input class="inp" value="'+(vals[2]||'')+'" placeholder="Questions"></td>'+  
     '<td><input class="inp" type="number" value="'+(vals[3]||'')+'" placeholder="min"></td>';  
   var confTd=document.createElement('td');confTd.appendChild(makeStars(parseInt(vals[4])||0,5));tr.appendChild(confTd);  
   var fluTd=document.createElement('td');fluTd.appendChild(makeStars(parseInt(vals[5])||0,5));tr.appendChild(fluTd);  
   var notesTd=document.createElement('td');notesTd.innerHTML='<input class="inp" value="'+(vals[6]||'')+'" placeholder="What improved?">';tr.appendChild(notesTd);  
   var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){tr.remove();};delTd.appendChild(dBtn);tr.appendChild(delTd);  
-  var sel=tr.querySelector('select');if(sel) sel.value=vals[1]||'HR mock';  
   tbody.appendChild(tr);  
   document.getElementById('cm-mocks').textContent=tbody.querySelectorAll('tr').length;  
 }
-
-var hrQuestions=['Tell me about yourself','Why should we hire you?','Your biggest strength?','Your biggest weakness?','Explain your project'];  
+var hrQuestions=['Tell me about yourself','Why should we hire you?','Your biggest strength?'];  
 function buildHRMastery(){  
-  var el=document.getElementById('hr-mastery');  
-  el.innerHTML=hrQuestions.map(function(q,i){  
-    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--color-border-tertiary)"><span style="font-size:12px;flex:1">'+q+'</span>'+makeStarsHTML(0,5,'hr-q-'+i)+'<span class="badge b-n" style="font-size:10px" id="hr-status-'+i+'">Untouched</span></div>';  
+  document.getElementById('hr-mastery').innerHTML=hrQuestions.map(function(q,i){  
+    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;flex:1">'+q+'</span>'+makeStarsHTML(0,5,'hr-q-'+i)+'<span class="badge b-n" style="font-size:10px" id="hr-status-'+i+'">Untouched</span></div>';  
   }).join('');  
 }  
 function makeStarsHTML(val,max,id){  
@@ -869,169 +706,60 @@ function makeStarsHTML(val,max,id){
   return h+'</div>';  
 }  
 function setHRStar(id,idx){  
-  var wrap=document.getElementById(id);  
-  if(!wrap) return;  
+  var wrap=document.getElementById(id); if(!wrap) return;  
   wrap.querySelectorAll('.star').forEach(function(s,j){s.classList.toggle('on',j<=idx)});  
-  var num=id.replace('hr-q-','');  
-  var statusEl=document.getElementById('hr-status-'+num);  
-  if(statusEl){  
-    if(idx<2) statusEl.textContent='Practising';  
-    else if(idx<4) statusEl.textContent='Getting there';  
-    else{statusEl.textContent='Mastered';statusEl.className='badge b-g';}  
-  }  
 }  
 buildHRMastery();
 
+// Aptitude
 function addAptRow(vals){  
   vals=vals||['','','','','','',''];  
   var tbody=document.getElementById('apt-body');  
   var tr=document.createElement('tr');  
-  tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="DD/MM"></td>'+  
-    '<td><input class="inp" value="'+(vals[1]||'')+'" placeholder="Topics"></td>'+  
-    '<td><input class="inp" type="number" value="'+(vals[2]||'')+'" placeholder="%" min="0" max="100"></td>'+  
-    '<td><input class="inp" value="'+(vals[3]||'')+'" placeholder="min"></td>'+  
-    '<td><input class="inp" type="number" value="'+(vals[4]||'')+'" placeholder="sec" min="0"></td>'+  
-    '<td><input class="inp" value="'+(vals[5]||'')+'" placeholder="weak topics"></td>'+  
-    '<td><input class="inp" value="'+(vals[6]||'')+'" placeholder="mistakes"></td>';  
+  tr.innerHTML='<td><input class="inp" value="'+(vals[0]||'')+'" placeholder="DD/MM"></td><td><input class="inp" value="'+(vals[1]||'')+'" placeholder="Topics"></td><td><input class="inp" type="number" value="'+(vals[2]||'')+'" placeholder="%" min="0" max="100"></td><td><input class="inp" value="'+(vals[3]||'')+'" placeholder="min"></td><td><input class="inp" type="number" value="'+(vals[4]||'')+'" placeholder="sec" min="0"></td><td><input class="inp" value="'+(vals[5]||'')+'" placeholder="weak topics"></td><td><input class="inp" value="'+(vals[6]||'')+'" placeholder="mistakes"></td>';  
   var delTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){tr.remove();updateAptMetrics();};delTd.appendChild(dBtn);tr.appendChild(delTd);  
   tbody.appendChild(tr);  
   updateAptMetrics();  
 }
-
 function updateAptMetrics(){  
   var rows=document.querySelectorAll('#apt-body tr');  
   document.getElementById('ap-mocks').textContent=rows.length;  
-  var scores=[],speeds=[],weaks={};  
-  rows.forEach(function(r){  
-    var inps=r.querySelectorAll('input');  
-    if(inps[2]&&inps[2].value) scores.push(parseInt(inps[2].value)||0);  
-    if(inps[4]&&inps[4].value) speeds.push(parseInt(inps[4].value)||0);  
-    if(inps[5]&&inps[5].value){var w=inps[5].value.trim();if(w) weaks[w]=(weaks[w]||0)+1;}  
-  });  
-  var avgAcc=scores.length?Math.round(scores.reduce(function(a,b){return a+b},0)/scores.length):0;  
-  var avgSpeed=speeds.length?Math.round(speeds.reduce(function(a,b){return a+b},0)/speeds.length):0;  
-  document.getElementById('ap-acc').textContent=scores.length?avgAcc+'%':'0%';  
-  document.getElementById('ap-bar').style.width=(scores.length?avgAcc:0)+'%';  
-  document.getElementById('ap-speed').textContent=speeds.length?avgSpeed+'s':'—';  
-  var topWeak=Object.keys(weaks).sort(function(a,b){return weaks[b]-weaks[a]})[0];  
-  document.getElementById('ap-weak').textContent=topWeak||'—';  
 }
-
-var aptTopics=[  
-  {name:'Percentages',target:5,done:0},  
-  {name:'Ratio & Prop.',target:4,done:0},  
-  {name:'Time & Work',target:4,done:0},  
-  {name:'Speed & Dist.',target:4,done:0},  
-];  
+var aptTopics=[{name:'Percentages',target:5,done:0}];  
 function buildAptTopics(){  
-  var el=document.getElementById('apt-topics');  
-  el.innerHTML=aptTopics.map(function(t,i){  
-    var pct=Math.min(100,Math.round(t.done/t.target*100));  
-    var col=pct<30?'var(--color-text-danger)':pct<70?'var(--color-text-warning)':'var(--color-text-success)';  
-    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:130px;flex-shrink:0">'+t.name+'</span><div class="bar-wrap" style="flex:1;height:7px"><div class="bar" style="width:'+pct+'%;background:'+col+'"></div></div><span style="font-size:11px;font-weight:500;min-width:40px;text-align:right;color:'+col+'">'+t.done+'/'+t.target+'</span><input type="number" min="0" max="'+t.target+'" value="'+t.done+'" style="width:32px;font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans)" oninput="aptTopics['+i+'].done=Math.min(parseInt(this.value)||0,'+t.target+');buildAptTopics()"></div>';  
+  document.getElementById('apt-topics').innerHTML=aptTopics.map(function(t,i){  
+    var pct=Math.min(100,Math.round(t.done/t.target*100)); var col=pct<30?'#dc2626':pct<70?'#d97706':'#059669';  
+    return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;width:130px;flex-shrink:0">'+t.name+'</span><div class="bar-wrap" style="flex:1;height:7px"><div class="bar" style="width:'+pct+'%;background:'+col+'"></div></div><span style="font-size:11px;font-weight:500;min-width:40px;text-align:right;color:'+col+'">'+t.done+'/'+t.target+'</span></div>';  
   }).join('');  
 }  
 buildAptTopics();
+function loadWeek(){}
 
-var weekTargets={1:{lc:30,apt:45,hr:2,cons:70},2:{lc:60,apt:55,hr:7,cons:75},3:{lc:100,apt:70,hr:14,cons:80},4:{lc:150,apt:80,hr:20,cons:85}};  
-function loadWeek(){  
-  var w=document.getElementById('week-select').value;  
-  var t=weekTargets[w];  
-  document.getElementById('w-lc').textContent=t.lc+' target';  
-  document.getElementById('w-apt').textContent=t.apt+'% target';  
-  document.getElementById('w-hr').textContent=t.hr+' mocks';  
-  document.getElementById('w-cons').textContent=t.cons+'% consistency';  
-}  
-loadWeek();
-
+// LocalStorage Persistence Engine
 function saveAllData() {  
-    saveInputs(); saveDailyTable(); saveCodingTable(); saveProjectTable(); saveState();  
-}
-
-function saveInputs() {  
     var data = {};  
-    document.querySelectorAll('input, select, textarea').forEach(function(el, index) {  
+    document.querySelectorAll('input:not(#ai-prompt), select, textarea').forEach(function(el, index) {  
         var key = el.id || ("input_" + index);  
         if (el.type === "checkbox") { data[key] = el.checked; } else { data[key] = el.value; }  
     });  
     localStorage.setItem("eptos_inputs", JSON.stringify(data));  
+    localStorage.setItem("eptos_state", JSON.stringify(state)); 
 }
-
-function loadInputs() {  
-    var saved = JSON.parse(localStorage.getItem("eptos_inputs"));  
-    if (!saved) return;  
-    document.querySelectorAll('input, select, textarea').forEach(function(el, index) {  
-        var key = el.id || ("input_" + index);  
-        if (saved[key] === undefined) return;  
-        if (el.type === "checkbox") { el.checked = saved[key]; } else { el.value = saved[key]; }  
-    });  
-}
-
-function saveDailyTable() {  
-    var rows = [];  
-    document.querySelectorAll('#daily-body tr').forEach(function(row) {  
-        var inputs = row.querySelectorAll('input, select');  
-        rows.push({ time: inputs[0]?.value || "", task: inputs[1]?.value || "", category: inputs[2]?.value || "", priority: inputs[3]?.value || "", estimated: inputs[4]?.value || "", actual: inputs[5]?.value || "", notes: inputs[6]?.value || "" });  
-    });  
-    localStorage.setItem("eptos_daily_rows", JSON.stringify(rows));  
-}
-
-function loadDailyTable() {  
-    var rows = JSON.parse(localStorage.getItem("eptos_daily_rows"));  
-    if (!rows) return;  
-    document.getElementById('daily-body').innerHTML = "";  
-    rows.forEach(function(row) { addDailyRow([row.time, row.task, row.category, row.priority, row.estimated, row.actual, row.notes]); });  
-}
-
-function saveCodingTable() {  
-    var rows = [];  
-    document.querySelectorAll('#coding-body tr').forEach(function(row) {  
-        var inputs = row.querySelectorAll('input, select');  
-        rows.push({ problem: inputs[0]?.value || "", topic: inputs[1]?.value || "", difficulty: inputs[2]?.value || "", time: inputs[3]?.value || "", accuracy: inputs[4]?.value || "", revision: inputs[5]?.value || "", weak: inputs[6]?.value || "" });  
-    });  
-    localStorage.setItem("eptos_coding_rows", JSON.stringify(rows));  
-}
-
-function loadCodingTable() {  
-    var rows = JSON.parse(localStorage.getItem("eptos_coding_rows"));  
-    if (!rows) return;  
-    document.getElementById('coding-body').innerHTML = "";  
-    rows.forEach(function(row) { addCodingRow([row.problem, row.topic, row.difficulty, row.time, "false", row.accuracy, row.revision, row.weak]); });  
-    updateCodingMetrics();  
-}
-
-function saveProjectTable() {  
-    var rows = [];  
-    document.querySelectorAll('#project-body tr').forEach(function(row) {  
-        var inputs = row.querySelectorAll('input, select');  
-        rows.push({ feature: inputs[0]?.value || "", module: inputs[1]?.value || "", status: inputs[2]?.value || "", priority: inputs[3]?.value || "", estimated: inputs[4]?.value || "", actual: inputs[5]?.value || "", notes: inputs[6]?.value || "" });  
-    });  
-    localStorage.setItem("eptos_project_rows", JSON.stringify(rows));  
-}
-
-function loadProjectTable() {  
-    var rows = JSON.parse(localStorage.getItem("eptos_project_rows"));  
-    if (!rows) return;  
-    document.getElementById('project-body').innerHTML = "";  
-    rows.forEach(function(row) { addProjectRow([row.feature, row.module, row.status, row.priority, row.estimated, row.actual, row.notes]); });  
-    updateProjectMetrics();  
-}
-
-function saveState() { localStorage.setItem("eptos_state", JSON.stringify(state)); }  
-function loadState() {  
-    var saved = JSON.parse(localStorage.getItem("eptos_state"));  
-    if (!saved) return;  
-    state = saved;  
-    buildStreakGrid();  
-}
-
 function loadAllData() {  
-    loadInputs(); loadState(); loadDailyTable(); loadCodingTable(); loadProjectTable(); updateMaster();  
+    var saved = JSON.parse(localStorage.getItem("eptos_inputs"));  
+    if (saved) {
+        document.querySelectorAll('input:not(#ai-prompt), select, textarea').forEach(function(el, index) {  
+            var key = el.id || ("input_" + index);  
+            if (saved[key] !== undefined) { if (el.type === "checkbox") { el.checked = saved[key]; } else { el.value = saved[key]; } }
+        });  
+    }
+    var savedState = JSON.parse(localStorage.getItem("eptos_state"));  
+    if (savedState) { state = savedState; buildStreakGrid(); }
+    updateMaster();  
 }
-
 window.addEventListener("beforeunload", saveAllData);  
 window.addEventListener("load", loadAllData);  
-setInterval(saveAllData, 10000);
+setInterval(saveAllData, 5000);
 
 // --- GEMINI AI INTEGRATION ---  
 async function askCoach() {  
@@ -1052,7 +780,7 @@ async function askCoach() {
         const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: systemInstruction + promptInput }] }] }) });  
         const data = await response.json();  
         if (data.error) { responseDiv.textContent = "Error: " + data.error.message; if (data.error.code === 400 || data.error.code === 403) localStorage.removeItem("GEMINI_API_KEY"); }  
-        else { responseDiv.style.color = "var(--color-text-primary)"; responseDiv.textContent = data.candidates[0].content.parts[0].text; document.getElementById('ai-prompt').value = ""; }  
+        else { responseDiv.style.color = "#111827"; responseDiv.textContent = data.candidates[0].content.parts[0].text; document.getElementById('ai-prompt').value = ""; }  
     } catch (error) { responseDiv.textContent = "Connection failed."; responseDiv.style.color = "#ef4444"; }  
 }
 </script>
