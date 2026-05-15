@@ -454,6 +454,15 @@ body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)
   </div>
 </div>
 
+<div style="margin-top: 1.5rem; border-top: 1px solid var(--color-border-tertiary); padding-top: 1rem;">
+  <h3 style="font-size: 14px; margin-bottom: 8px; color: #3b82f6; font-weight: bold;">🤖 AI Interview Coach</h3>
+  <div style="display: flex; gap: 8px;">
+    <input type="text" id="ai-prompt" placeholder="Ask a C++ or LeetCode question..." style="flex: 1; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--color-border-tertiary); color: white; border-radius: 4px; outline: none;">
+    <button onclick="askCoach()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s;">Ask</button>
+  </div>
+  <div id="ai-response" style="margin-top: 12px; font-size: 13px; color: var(--color-text-secondary); white-space: pre-wrap; line-height: 1.5;"></div>
+</div>
+
 </div>
 
 <script>
@@ -1359,4 +1368,62 @@ if (ctx) {
         }
     });
 }
+
+// --- GEMINI AI INTEGRATION ---
+async function askCoach() {
+    var promptInput = document.getElementById('ai-prompt').value;
+    if (!promptInput) return;
+
+    var responseDiv = document.getElementById('ai-response');
+    responseDiv.style.color = '#3b82f6';
+    responseDiv.textContent = "Analyzing...";
+
+    // 1. Secure API Key Check
+    let apiKey = localStorage.getItem("GEMINI_API_KEY");
+    if (!apiKey) {
+        apiKey = prompt("Welcome to the AI Coach! Enter your free Gemini API Key (It saves securely to your browser):");
+        if (!apiKey) {
+            responseDiv.textContent = "API Key required to use the coach.";
+            responseDiv.style.color = "var(--color-text-secondary)";
+            return;
+        }
+        localStorage.setItem("GEMINI_API_KEY", apiKey);
+    }
+
+    // 2. Fetch Request to Gemini 1.5 Flash
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    
+    // We add a system prompt wrapper to make it act like a strict tech interviewer
+    const systemInstruction = "You are a strict, concise technical interview coach helping a student prep for software engineering placements. Answer in 3 sentences or less. Do not use markdown headers. The user says: ";
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: systemInstruction + promptInput }] }]
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            responseDiv.textContent = "API Error: " + data.error.message;
+            responseDiv.style.color = "#ef4444"; // Red for error
+            if (data.error.code === 400 || data.error.code === 403) {
+                localStorage.removeItem("GEMINI_API_KEY"); // Clear bad key
+            }
+        } else {
+            responseDiv.style.color = "var(--color-text-primary)";
+            responseDiv.textContent = data.candidates[0].content.parts[0].text;
+            document.getElementById('ai-prompt').value = ""; // Clear input
+        }
+        
+    } catch (error) {
+        console.error("AI Error:", error);
+        responseDiv.textContent = "Connection failed. Check console.";
+        responseDiv.style.color = "#ef4444";
+    }
+}
+
 </script>
