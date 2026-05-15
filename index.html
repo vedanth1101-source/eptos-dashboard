@@ -7,9 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
-/* --- OVERRIDDEN GLOBAL LIGHT VARIABLES --- */
 :root {
   --color-background-primary: #ffffff;
   --color-background-secondary: #F8F9FA;
@@ -34,8 +32,6 @@
 body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary); background-color: #FDFCF8;}
 .font-serif { font-family: 'Lora', serif; }
 
-/* Existing class mappings for old tabs to fit new theme */
-.nav{display:none;} /* Hidden because we use sidebar now */
 .pane{display:none}.pane.on{display:block}
 .sec{margin-bottom:1.25rem}
 .sec-hdr{font-size:12px;font-weight:600;color:var(--color-text-primary);margin-bottom:0.8rem;display:flex;align-items:center;gap:6px}
@@ -75,8 +71,6 @@ body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)
 .action-btn{font-size:12px;padding:8px 16px;border-radius:20px;border:1px solid var(--color-border-secondary);background:white;color:var(--color-text-primary);cursor:pointer;font-weight:500;margin:4px 4px 0 0;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
 .action-btn:hover{background:var(--color-background-secondary)}
 .priority-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
-
-/* Custom UI Overrides for the new aesthetic */
 .streak-day { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; cursor: pointer; background: #F3F4F6; color: #9CA3AF; transition: all 0.2s; }
 .streak-day.done { background: #22C55E; color: white; }
 .streak-day.today { border: 2px solid #3b82f6; }
@@ -239,7 +233,6 @@ body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)
             </div>
             <div class="hidden"><span id="overall-pct"></span><span id="coding-score"></span><span id="apt-score"></span><span id="comm-score"></span><div id="bar-overall"></div><div id="bar-coding"></div><div id="bar-apt"></div><div id="bar-comm"></div></div>
         </div>
-
     </div> <div id="pane-daily" class="pane">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
@@ -286,7 +279,6 @@ body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)
         <div class="m"><div class="m-val" id="c-acc">—</div><div class="m-lbl">Avg accuracy</div><div class="bar-wrap"><div class="bar" id="c-bar-acc" style="width:0%;background:var(--color-text-success)"></div></div></div>
         <div class="m"><div class="m-val" id="c-streak">0</div><div class="m-lbl">Coding streak</div><div class="bar-wrap"><div class="bar" id="c-bar-streak" style="width:0%;background:var(--color-text-warning)"></div></div></div>
       </div>
-    
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
           <div class="sec-hdr" style="margin-bottom:0"><i class="ti ti-code" aria-hidden="true"></i>Problem log</div>
@@ -312,7 +304,6 @@ body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)
         </table>
         </div>
       </div>
-    
       <div class="card">
         <div class="sec-hdr"><i class="ti ti-chart-bar" aria-hidden="true"></i>Topic mastery tracker</div>
         <div id="topic-mastery" style="display:flex;flex-direction:column;gap:6px"></div>
@@ -501,7 +492,6 @@ body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)
         <div id="hash-out" style="display:none;margin-top:8px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:0.6rem;font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);line-height:1.7;word-break:break-all"></div>
       </div>
     </div>
-
 </main>
 
 <script>  
@@ -546,7 +536,7 @@ function initChart() {
   var ctx = document.getElementById('readinessChart').getContext('2d');  
     
   var gradient = ctx.createLinearGradient(0, 0, 0, 160);  
-  gradient.addColorStop(0, 'rgba(139, 92, 246, 0.2)'); // Purple match 
+  gradient.addColorStop(0, 'rgba(139, 92, 246, 0.2)'); 
   gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
 
   readinessChart = new Chart(ctx, {  
@@ -618,7 +608,6 @@ function updateMaster(){
   document.getElementById('comm-score').textContent=commScore+'%';  
   document.getElementById('readiness-display').textContent=overall+'%';  
   
-  // Update the circular progress stroke dasharray logic
   let circlePath = document.getElementById('circle-progress');
   if(circlePath) {
       let dashArray = overall + ", 100";
@@ -749,7 +738,7 @@ function addCodingRow(vals){
     '<td><input class="inp" value="'+(vals[7]||'')+'" placeholder="weak pattern"></td>';  
   var dTd=document.createElement('td');var dBtn=document.createElement('button');dBtn.className='del-btn';dBtn.innerHTML='X';dBtn.onclick=function(){fullTr.remove();updateCodingMetrics();};dTd.appendChild(dBtn);fullTr.appendChild(dTd);  
   var parsedTr=document.createElement('tbody');parsedTr.innerHTML=fullTr.outerHTML;var realTr=parsedTr.firstChild;  
-  realTr.children[5].replaceWith(chkCell); // Re-attach functional checkbox
+  realTr.children[5].replaceWith(chkCell); 
   var topicSel=realTr.querySelector('select');topicSel.value=vals[2]||'Arrays';  
   var diffSel=realTr.querySelectorAll('select')[1];diffSel.value=vals[3]||'Easy';  
   tbody.appendChild(realTr);  
@@ -954,8 +943,6 @@ function loadWeek(){
   document.getElementById('w-cons').textContent=t.cons+'% consistency';  
 }  
 loadWeek();
-
-// ---------------- LOCAL STORAGE LOGIC ----------------
 
 function saveAllData() {  
     saveInputs(); saveDailyTable(); saveCodingTable(); saveProjectTable(); saveState();  
